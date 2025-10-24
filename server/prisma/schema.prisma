@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model User {
+  id                   String @id @default(uuid())
+  username             String @unique
+  email                String @unique
+  password             String
+  profileImage         String?
+  bio                  String?
+  isOnline             Boolean @default(false)
+  createdAt            DateTime @default(now())
+  directChatAsUser1    DirectChat[] @relation("User1")
+  directChatAsUser2    DirectChat[] @relation("User2")
+  groupMemberships     GroupMembership[]
+  messages             Messages[]
+ sentFriendRequest     FriendRequest[] @relation("FriendRequestSender")
+ receivedFriendRequest FriendRequest[] @relation("FriendRequestReceiver")
+}
+
+
+model DirectChat {
+  id        String @id @default(uuid())
+  user1Id   String 
+  user2Id   String
+  user1     User @relation("User1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2     User @relation("User2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages  Messages[]
+  createdAt DateTime @default(now())
+
+ @@unique([user1Id, user2Id])
+}
+
+model Messages {
+  id           String   @id @default(uuid())
+  senderId     String
+  sender       User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  directChatId String?
+  groupId      String?
+  directChat   DirectChat? @relation(fields: [directChatId], references: [id], onDelete: Cascade)
+  groupChat    GroupChat?  @relation(fields: [groupId], references: [id], onDelete: Cascade)  
+  content      String
+  file         String?
+  imageUrl     String?
+  voiceMessage String?
+  seen         Boolean @default(false)
+}
+
+model GroupChat {
+  id          String @id @default(uuid())
+  name        String
+  description String?           
+  imageUrl    String?           
+  messages    Messages[]
+  members     GroupMembership[] 
+  createdAt  DateTime @default(now()) 
+
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+model GroupMembership {
+  id String @id @default(uuid())
+  userId String
+  groupId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group GroupChat @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  role GroupRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  @@unique([userId, groupId])
+}
+ 
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model FriendRequest {
+  id          String @id @default(uuid())
+  senderId    String
+  receiverId  String
+  sender      User @relation("FriendRequestSender", fields: [senderId], references: [id])
+  receiver    User @relation("FriendRequestReceiver", fields: [receiverId], references: [id]) 
+  status      FriendRequestStatus @default(PENDING)
+
+ @@unique([senderId, receiverId])
+}
