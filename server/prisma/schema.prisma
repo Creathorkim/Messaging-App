@@ -14,7 +14,7 @@ model User {
   id                   String @id @default(uuid())
   username             String @unique
   email                String @unique
-  password             String
+  password             String?
   profileImage         String?
   bio                  String?
   isOnline             Boolean @default(false)
