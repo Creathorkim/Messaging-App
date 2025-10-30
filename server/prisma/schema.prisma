@@ -97,6 +97,7 @@ model FriendRequest {
   sender      User @relation("FriendRequestSender", fields: [senderId], references: [id])
   receiver    User @relation("FriendRequestReceiver", fields: [receiverId], references: [id]) 
   status      FriendRequestStatus @default(PENDING)
+  createdAt   DateTime @default(now())
 
  @@unique([senderId, receiverId])
 }
