@@ -43,6 +43,7 @@ model DirectChat {
 model Messages {
   id           String   @id @default(uuid())
   senderId     String
+  read         Boolean @default(false)
   sender       User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   directChatId String?

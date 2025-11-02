@@ -378,20 +378,27 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
   try {
     const { requestId } = req.params;
 
-    const acceptedFriendRequest = await prisma.friendRequest.update({
+    const acceptedFriendReques = await prisma.friendRequest.update({
       where: { id: requestId as string },
       include: { sender: true, receiver: true },
       data: { status: "ACCEPTED" },
     });
 
+    await prisma.directChat.create({
+      data: {
+        user1Id: acceptedFriendReques.senderId,
+        user2Id: acceptedFriendReques.receiverId,
+      },
+    });
+
     sendEmail(
-      acceptedFriendRequest.sender.email,
-      `${acceptedFriendRequest.receiver.username} accepted your friend request! - NexChat 🎉`,
+      acceptedFriendReques.sender.email,
+      `${acceptedFriendReques.receiver.username} accepted your friend request! - NexChat 🎉`,
       `<div style = "font-family: Arial, sans-serif;  max-width: 600px; padding:20px; background-color: #f9f9f9; border-radius: 8px; ">
         <h1 style = "color: #333;  margin: 0 0 20px 0;">Welcome to NexChat Message App</h1>
-        <p style="color: #555; margin: 0 0 20px 0;">Hi ${acceptedFriendRequest.sender.username},</p>
-        <p style="color: #555; margin: 0 0 10px 0;"><strong> Great news! <strong>${acceptedFriendRequest.receiver.username}</strong> accepted your friend request on NexChat!</p>
-        <p style="color: #555; margin: 0 0 20px 0;">  🎊 You can now start chatting with ${acceptedFriendRequest.receiver.username}!</p>
+        <p style="color: #555; margin: 0 0 20px 0;">Hi ${acceptedFriendReques.sender.username},</p>
+        <p style="color: #555; margin: 0 0 10px 0;"><strong> Great news! <strong>${acceptedFriendReques.receiver.username}</strong> accepted your friend request on NexChat!</p>
+        <p style="color: #555; margin: 0 0 20px 0;">  🎊 You can now start chatting with ${acceptedFriendReques.receiver.username}!</p>
         <br>
         <p style="margin: 0;color: #999;">Best regards,<br>The NexChat Team</p>
       </div>`

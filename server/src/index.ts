@@ -1,6 +1,7 @@
+import http from "http";
 import express from "express";
 import morgan from "morgan";
-import type { Request, Response } from "express";
+import { Server } from "socket.io";
 import passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -12,6 +13,11 @@ dotenv.config();
 import router from "./routes/route";
 
 const app = express();
+
+const server = http.createServer(app);
+const io = new Server(server);
+
+
 app.use(morgan("dev"));
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
