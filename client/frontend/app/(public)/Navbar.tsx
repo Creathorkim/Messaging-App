@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { MessageCircle } from "lucide-react";
 import Hamburger from "hamburger-react";
@@ -9,7 +9,7 @@ export default function Navbar() {
 
   return (
     //Desktop
-    <div className="absolute inset-0 z-10 h-screen p-2 md:p-6">
+    <div className="absolute inset-x-0 z-10 h-screen p-2 md:p-6">
       <nav className="p-4 md:p-4 rounded-4xl backdrop-blur-md bg-gray-900/30 border border-gray-500 text-white">
         <div className="flex items-center justify-between md:ml-10 ml-0">
           <div className="flex items-center gap-50">
@@ -17,7 +17,7 @@ export default function Navbar() {
               <MessageCircle size={32} />
               <h2 className="font-semibold text-[24px]">KimChat</h2>
             </div>
-            <ul className="hidden lg:flex gap-2 font-sans font-semibold text-[16px] text-[#535862]">
+            <ul className="hidden lg:flex gap-2  font-semibold text-[16px] text-[#535862]">
               <li>Features</li>
               <li>About</li>
               <li>Contact</li>
