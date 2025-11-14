@@ -1,28 +1,28 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
-import Navbar from "../../components/static/Navbar";
-import Footer from "@/components/static/Footer";
-
+import AgreementNav from "@/components/static/AgreementNav";
+import Footer from "@/components/static/Footer"
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "KimChat",
-  description: "KimChat",
+  title: "NexChat",
+  description: "NexChat",
 };
 
-export default function PublicLayout({
+export default function AgreementLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <div className={dmSans.className}>
-      <Navbar />
+      <AgreementNav />
       {children}
-      <Footer/>
+      <Footer />
+
     </div>
   );
 }
