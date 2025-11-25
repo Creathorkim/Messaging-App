@@ -13,6 +13,7 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   getFriendRequest,
+  contactUs,
 } from "../controllers/controllers";
 import { signUpValidation, loginValidation } from "../middlewares/validation";
 import { Router } from "express";
@@ -20,6 +21,7 @@ const router = Router();
 
 router.post("/signUp", signUpValidation(), signUp);
 router.post("/login", loginValidation(), Login);
+router.post("/contact", contactUs);
 router.get("/google/signup", googleSignUpInit);
 router.get("/auth/google/callback", GoogleSignUp);
 router.get("/google/login", GoogleInit);

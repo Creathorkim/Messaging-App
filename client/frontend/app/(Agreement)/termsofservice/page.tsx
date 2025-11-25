@@ -11,7 +11,7 @@ export default function TermsOfService() {
       </div>
       <div className="text-white text-start">
         <h2 className="text-[25px] font-semibold pb-3">Introduction</h2>
-        <p className="text-lg leading-relaxed font-medium">
+        <p className="text-lg leading-relaxed">
           Welcome to KimChat. These Terms of Service (&quote;Terms&quote;)
           govern your use of KimChat&apos;s messaging services, website, mobile
           app(COMING SOON), and related services (collectively, the
@@ -28,10 +28,10 @@ export default function TermsOfService() {
         <h2 className="text-[25px] font-semibold pb-3">
           1. Acceptance of Terms
         </h2>
-        <p className="text-lg leading-relaxed font-medium">
+        <p className="text-lg leading-relaxed">
           By accessing or using KimChat, you confirm that:
         </p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>You have read and understood these Terms</li>
           <li>You agree to be bound by these Terms and our Privacy Policy</li>
           <li>You meet the eligibility requirements below</li>
@@ -47,23 +47,23 @@ export default function TermsOfService() {
         <h2 className="text-[25px] font-semibold pb-3">
           2. Account Registration and Security
         </h2>
-        <div className="text-lg  font-medium">
-          <p>Creating an Account</p>
-          To use KimChat, you must:
+        <div className="text-lg  ">
+          <p className="font-bold textr-lg mb-3">Creating an Account</p>
+          <p>To use KimChat, you must:</p>
         </div>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>Provide a valid email address</li>
           <li>Create a secure password</li>
           <li>Provide accurate and complete information</li>
           <li>Be a real person (no bots or automated accounts)</li>
         </ul>
 
-        <div className="text-lg mt-4">
+        <div className="text-lg mt-7">
           <p>
             <strong>Account Security</strong> - Your Responsibilities You are
             responsible for:
           </p>
-          <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+          <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
             <li>
               <strong>Keeping your password secure</strong> - Don&apos;t share
               it with anyone
@@ -83,14 +83,16 @@ export default function TermsOfService() {
           </ul>
 
           <p className="pt-4">We recommend:</p>
-          <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+          <ul className="list-disc px-5 pt-2 text-lg space-y-2">
             <li>
               Use a strong, unique password (mix of letters, numbers, symbols)
             </li>
             <li>Log out on shared devices</li>
           </ul>
 
-          <p className="pt-4 pb-1">Account Termination by You</p>
+          <p className="pt-4 pb-1 font-bold text-lg">
+            Account Termination by You
+          </p>
           <p>
             You can delete your account anytime through the app settings. When
             you delete your account:
@@ -108,16 +110,16 @@ export default function TermsOfService() {
         <h2 className="text-[25px] font-semibold pb-3">
           3. Acceptable Use Policy
         </h2>
-        <p className="text-lg leading-relaxed font-medium pb-3">
+        <p className="text-lg leading-relaxed  pb-3">
           KimChat is for lawful, respectful communication. You agree to use the
           Service responsibly.
         </p>
-        <p className="text-lg ">Prohibited Activities</p>
+        <p className="text-lg font-bold mb-2 ">Prohibited Activities</p>
         <p>
           You <strong>may NOT</strong> use KimChat to:
         </p>
-        <h3 className="font-bold mt-4">Harassment & Abuse</h3>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <h3 className="font-bold mt-2">Harassment & Abuse</h3>
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>Harass, threaten, intimidate, or bully others</li>
           <li>
             Stalk or repeatedly contact someone who doesn&apos;t want contact
@@ -128,7 +130,7 @@ export default function TermsOfService() {
         </ul>
 
         <h3 className="font-bold mt-4">Spam & Abuse</h3>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>Send unsolicited bulk messages (spam)</li>
           <li>Engage in commercial spam or unauthorized advertising</li>
           <li>Use automated systems (bots) without permission</li>
@@ -136,7 +138,7 @@ export default function TermsOfService() {
         </ul>
 
         <h3 className="font-bold mt-4">Service Abuse</h3>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg   space-y-2">
           <li>Attempt to hack, disrupt, or damage the Service</li>
           <li>Scrape or collect user data without permission</li>
           <li>Reverse engineer or decompile our software</li>
@@ -148,7 +150,7 @@ export default function TermsOfService() {
       <div className="text-white text-start">
         <h2 className="text-[25px] font-semibold pb-3">4. Your Content</h2>
         <p className="text-lg  font-medium">We use collected information to:</p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>You own your content (messages, photos, files, etc.)</li>
           <li>You&apos;re responsible for what you share</li>
           <li>
@@ -169,7 +171,7 @@ export default function TermsOfService() {
         <h2 className="text-[25px] font-semibold pb-3">
           5. Privacy & Security
         </h2>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg space-y-2">
           <li>All messages are end-to-end encrypted</li>
           <li>
             We can&apos;t read your message content or recover lost messages
@@ -185,7 +187,7 @@ export default function TermsOfService() {
           6. Intellectual Property
         </h2>
 
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg space-y-2">
           <li>KimChat owns all rights to our software, logo, and trademarks</li>
           <li>Don&apos;t copy, modify, or reverse engineer our Service</li>
           <li>Don&apos;t use our trademarks without permission</li>
@@ -203,12 +205,12 @@ export default function TermsOfService() {
 
       <div className="text-white text-start">
         <h2 className="text-[25px] font-semibold pb-3">
-          10. Changes to This Privacy Policy
+          8. Changes to This Privacy Policy
         </h2>
-        <p className="text-lg  font-medium">
+        <p className="text-lg ">
           We may update this policy. When we make significant changes:
         </p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium pb-3  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg pb-3  space-y-2">
           <li>We&apos;ll email you at your registered address</li>
           <li>We&apos;ll display a notice in the app</li>
           <li>We&apos;ll update the &quot;Last Updated&quot; date</li>
@@ -225,7 +227,7 @@ export default function TermsOfService() {
         </h2>
         <p className="text-lg  font-medium">General Provisions</p>
 
-        <ul className="list-disc px-5 pt-2 text-lg font-medium pb-3  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg  pb-3  space-y-2">
           <li>These Terms and our Privacy Policy are the entire agreement</li>
           <li>If any provision is invalid, the rest remains in effect</li>
           <li>Notices sent to your registered email</li>
@@ -233,7 +235,7 @@ export default function TermsOfService() {
 
         <p className="text-lg  font-medium">Reporting Issues</p>
 
-        <ul className="list-disc px-5 pt-2 text-lg font-medium pb-3  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg  pb-3  space-y-2">
           <li>
             <strong>Illegal content</strong>:{" "}
             <a href="mailto:legal@kimchat.com" className="hover:underline">

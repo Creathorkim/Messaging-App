@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import Image from "next/image";
 export default function Contact(): React.ReactElement {
   return (
     <section className="w-full min-h-screen px-9 sm:py-0 md:py-24 bg-[#060010] text-white flex flex-col  items-center justify-center ">

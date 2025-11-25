@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
       </div>
       <div className="text-white text-start">
         <h2 className="text-[25px] font-semibold pb-3">Introduction</h2>
-        <p className="text-lg leading-relaxed font-medium">
+        <p className="text-lg leading-relaxed">
           Welcome to KimChat. This Privacy Policy explains how we collect, use,
           protect, and handle your information when you use our messaging
           service. We&apos;re committed to transparency and protecting your
@@ -25,11 +25,11 @@ export default function PrivacyPolicy() {
         <h2 className="text-[25px] font-semibold pb-3">
           1. Our Privacy Commitment
         </h2>
-        <p className="text-lg leading-relaxed font-medium">
+        <p className="text-lg leading-relaxed">
           At KimChat, we believe your conversations belong to you. Here&apos;s
           what that means:
         </p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg   space-y-2">
           <li>
             <strong>End-to-end encryption on every message</strong>- We
             can&apos;t read your messages
@@ -57,10 +57,10 @@ export default function PrivacyPolicy() {
         <h2 className="text-[25px] font-semibold mb-3">
           2. What We Don&apos;t Collect
         </h2>
-        <p className="text-lg  font-medium">
+        <p className="text-lg  ">
           We <strong>DO NOT</strong> collect:
         </p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg   space-y-2">
           <li>Message content (encrypted, unreadable to us)</li>
           <li>Your location or GPS data</li>
           <li>Contents of photos, videos, or files you send</li>
@@ -75,11 +75,9 @@ export default function PrivacyPolicy() {
         <h2 className="text-[25px] font-semibold pb-3">
           3. What We Do Collect
         </h2>
-        <p className="text-lg  font-medium">
-          To provide our service, we collect:
-        </p>
-        <h1 className="font-bold text-2xl mt-4">Account Information</h1>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <p className="text-lg  ">To provide our service, we collect:</p>
+        <h1 className="font-bold text-lg mt-4">Account Information</h1>
+        <ul className="list-disc px-5 pt-2 text-lg   space-y-2">
           <li>Email address (required for login)</li>
           <li>Username and display name (optional)</li>
           <li>Profile photo (optional, stored encrypted)</li>
@@ -92,7 +90,7 @@ export default function PrivacyPolicy() {
           4. How We Use Your Information
         </h2>
         <p className="text-lg  font-medium">We use collected information to:</p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg   space-y-2">
           <li>Deliver messages between you and your contacts</li>
           <li>Maintain and improve our service</li>
           <li>Prevent abuse and ensure security</li>
@@ -104,8 +102,8 @@ export default function PrivacyPolicy() {
         <h2 className="text-[25px] font-semibold pb-3">
           5. Data Storage & Security
         </h2>
-        <p className="text-lg  font-medium">We protect your data with:</p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <p className="text-lg ">We protect your data with:</p>
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>
             <strong>Encrypted servers</strong> in secure data centers
           </li>
@@ -130,8 +128,8 @@ export default function PrivacyPolicy() {
         <h2 className="text-[25px] font-semibold pb-3">
           6. How We Use Your Information
         </h2>
-        <p className="text-lg  font-medium">We use collected information to:</p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium  space-y-2">
+        <p className="text-lg ">We use collected information to:</p>
+        <ul className="list-disc px-5 pt-2 text-lg  space-y-2">
           <li>Deliver messages between you and your contacts</li>
           <li>Maintain and improve our service</li>
           <li>Prevent abuse and ensure security</li>
@@ -206,10 +204,10 @@ export default function PrivacyPolicy() {
         <h2 className="text-[25px] font-semibold pb-3">
           10. Changes to This Privacy Policy
         </h2>
-        <p className="text-lg  font-medium">
+        <p className="text-lg ">
           We may update this policy. When we make significant changes:
         </p>
-        <ul className="list-disc px-5 pt-2 text-lg font-medium pb-3  space-y-2">
+        <ul className="list-disc px-5 pt-2 text-lg pb-3  space-y-2">
           <li>We&apos;ll email you at your registered address</li>
           <li>We&apos;ll display a notice in the app</li>
           <li>We&apos;ll update the &quot;Last Updated&quot; date</li>
@@ -222,7 +220,7 @@ export default function PrivacyPolicy() {
 
       <div className="text-white text-start space-y-4 mb-20">
         <h2 className="text-[25px] font-semibold ">11. Contact Us</h2>
-        <p className="text-lg  font-medium">
+        <p className="text-lg  ">
           Questions, concerns, or requests about privacy?
         </p>
 

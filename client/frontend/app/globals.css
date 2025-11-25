@@ -129,3 +129,25 @@
 html {
   scroll-behavior: smooth;
 }
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 transparent;
+}

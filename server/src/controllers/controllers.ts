@@ -2,7 +2,7 @@ import passport from "passport";
 import type { Request, Response, NextFunction } from "express";
 import prisma from "../config/prismaClient";
 import jwt from "jsonwebtoken";
-import { sendEmail } from "../services/emailService";
+import { sendEmail, contactApp } from "../services/emailService";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import dotenv from "dotenv";
@@ -437,6 +437,18 @@ export const getFriendRequest = async (req: Request, res: Response) => {
     res.status(200).json({ request: requestReceived });
   } catch (err) {
     console.log(err);
-    res.status(500).json("Internal error.");
+    res.status(500).json({ error: "Internal error" });
+  }
+};
+
+export const contactUs = async (req: Request, res: Response) => {
+  const { email, subject, message } = req.body;
+  try {
+    await contactApp(email, subject, message);
+    console.log("Email sent successfully");
+    res.status(200).json({message: "Email sent successfully "})
+  } catch (err) {
+    console.log("CONTACT US ERROR ", err);
+    res.status(500).json({ error: "Internal error" });
   }
 };
