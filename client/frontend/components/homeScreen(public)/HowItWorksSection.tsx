@@ -55,7 +55,7 @@ export default function HowItWorksSection() {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-[#181D27] text-[36px] md:text-[56px] font-semibold tracking-tighter mb-5  ">
+          <h1 className="text-[#7F56D9] text-[36px] md:text-[56px] font-semibold tracking-tighter mb-5  ">
             Features
           </h1>
           <p className="text-[#535862] text-[20px] leading-relaxed">

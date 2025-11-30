@@ -10,8 +10,8 @@ export default function Navbar(): React.ReactElement {
 
   return (
     //Desktop
-    <div className=" p-2 md:p-5 bg-[#060010] ">
-      <nav className="p-4 md:p-4 rounded-4xl backdrop-blur-md bg-gray-900/30 border border-gray-500 text-white">
+    <div className=" p-2 md:p-5 bg-[#060010] w-full">
+      <nav className="w-full p-4 md:p-4 rounded-4xl backdrop-blur-md border border-gray-500 text-white">
         <div className="flex items-center justify-between md:ml-10 ml-0">
           <div className="flex items-center gap-50">
             <Link href="/">

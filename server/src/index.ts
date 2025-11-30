@@ -1,6 +1,7 @@
 import http from "http";
 import express from "express";
 import morgan from "morgan";
+import cors from "cors";
 import { Server } from "socket.io";
 import passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
@@ -17,7 +18,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
@@ -30,7 +36,9 @@ passport.use(
     { usernameField: "email", passwordField: "password" },
     async (email, password, done) => {
       try {
-        const user = await prisma.user.findUnique({ where: { email: email } });
+        const user = await prisma.user.findUnique({
+          where: { email: email },
+        });
         if (!user) return done(null, false, { message: "User not found " });
 
         const isMatch = await bcrypt.compare(password, user.password!);
@@ -80,7 +88,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.GOOGLE_REDIRECT_URL,
+      callbackURL: process.env.GOOGLE_LOGIN_REDIRECT_URL!,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -107,7 +115,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.GOOGLE_REDIRECT_URL,
+      callbackURL: process.env.GOOGLE_SIGNUP_REDIRECT_URL!,
     },
     async (acessToken, refreshToken, profile, done) => {
       try {
@@ -136,7 +144,7 @@ passport.use(
   )
 );
 
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`App running on http://localhost:${PORT}`);
 });

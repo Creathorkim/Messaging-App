@@ -8,7 +8,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "NexChat Message App",
+  title: "KimChat",
   description:
     "Connect instantly. Chat effortlessly. A sleek, secure messaging app built for real-time conversations and meaningful connections.",
 };

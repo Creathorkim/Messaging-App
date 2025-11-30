@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import { ProtectedRoute } from "@/components/ProtectedRoute/protectedRoute";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -17,10 +18,8 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={dmSans.className}>
-      
-      {children}
-      
-    </div>
+    <ProtectedRoute>
+      <div className={dmSans.className}>{children}</div>
+    </ProtectedRoute>
   );
 }

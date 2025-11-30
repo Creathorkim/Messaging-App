@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import ChatSideBar from "@/components/chat/ChatSideBar";
 import ChatArea from "@/components/chat/ChatArea";
 import UserProfilePanel from "@/components/chat/UserProfilePanel";
@@ -13,6 +14,7 @@ import SettingsDialog from "@/components/chat/dialogs/SettingsDialog";
 import ChangePasswordDialog from "@/components/chat/dialogs/ChangePasswordDialog";
 
 export default function ClientHomePage() {
+  const paramsData = useSearchParams();
   const [isGroup, setIsGroup] = useState(false);
   const [isInbox, setIsInbox] = useState(false);
   const [addFriends, setAddFriends] = useState(false);
@@ -21,6 +23,7 @@ export default function ClientHomePage() {
   const [editProfile, setEditProfile] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
 
+  const token = paramsData.get("token");
   const handleGroupDialog = () => {
     setIsGroup(!isGroup);
   };
@@ -46,6 +49,14 @@ export default function ClientHomePage() {
   const handleChangePasswordDialog = () => {
     setChangePassword(!changePassword);
   };
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+      window.history.replaceState({}, "", "/HomeScreen");
+    }
+  }, [token]);
+
   return (
     <div>
       <section className="bg-[#060010] h-screen overflow-hidden flex flex-row  w-full text-white pt-3 px-2 md:py-0 md:px-0">

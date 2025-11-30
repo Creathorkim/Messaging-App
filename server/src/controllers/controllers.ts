@@ -13,7 +13,8 @@ export const signUp = async (req: Request, res: Response) => {
 
   const error = validationResult(req);
   if (!error.isEmpty()) {
-    return res.status(400).json({ error: error.array() });
+    const errorMessage = error.array().map((err) => err.msg);
+    return res.status(400).json({ error: errorMessage });
   }
 
   const defaultUsername = email.split("@")[0];
@@ -52,14 +53,7 @@ export const signUp = async (req: Request, res: Response) => {
       `
     );
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
-    });
-    return res.status(201).json({
-      success: true,
-      message: "Account created successfully",
-      token: token,
-    });
+    return res.redirect("http://localhost:3000/login");
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -71,7 +65,8 @@ export const signUp = async (req: Request, res: Response) => {
 export const Login = (req: Request, res: Response, next: NextFunction) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
-    return res.status(400).json({ error: error.array() });
+    const errorMessage = error.array().map((err) => err.msg);
+    return res.status(400).json({ error: errorMessage });
   }
 
   try {
@@ -108,7 +103,7 @@ export const Login = (req: Request, res: Response, next: NextFunction) => {
         );
         return res
           .status(200)
-          .json({ message: "Login successful", data: token });
+          .json({ message: "Login successful", token: token });
       }
     )(req, res, next);
   } catch (err) {
@@ -133,8 +128,18 @@ export const GoogleLogin = (
       "google-login",
       { session: false },
       (error: any, user: any, info: any) => {
-        if (error) return res.status(500).json({ error: "Internal error" });
-        if (!user) return res.status(401).json({ error: info?.message });
+        if (error)
+          return res.redirect(
+            `http://localhost:3000/login?error=${encodeURIComponent(
+              "server error"
+            )}`
+          );
+        if (!user)
+          return res.redirect(
+            `http://localhost:3000/login?error=${encodeURIComponent(
+              info.message
+            )}`
+          );
 
         const loginTime = new Date().toLocaleString();
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
@@ -160,7 +165,9 @@ export const GoogleLogin = (
         </div>`
         );
 
-        res.status(200).json({ token: token });
+        return res.redirect(
+          `http://localhost:3000/HomeScreen?token=${token}`
+        );
       }
     )(req, res, next);
   } catch (err) {
@@ -186,10 +193,17 @@ export const GoogleSignUp = (
       { session: false },
       (error: any, user: any, info: any) => {
         if (error)
-          return res.status(500).json({
-            error: "Internal error",
-          });
-        if (!user) return res.status(401).json({ error: info?.message });
+          return res.redirect(
+            `http://localhost:3000/signup?error=${encodeURIComponent(
+              "server error"
+            )}`
+          );
+        if (!user)
+          return res.redirect(
+            `http://localhost:3000/signup?error=${encodeURIComponent(
+              "Account already exists, try logging in."
+            )}`
+          );
 
         sendEmail(
           user.email,
@@ -205,22 +219,15 @@ export const GoogleSignUp = (
       </div>
       `
         );
-
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-          expiresIn: "7d",
-        });
-        return res.status(201).json({
-          success: true,
-          message: "Account created successfully",
-          token: token,
-        });
       }
     )(req, res, next);
   } catch (err) {
     console.log(err);
-    res.status(500).json({
-      error: "Internal error.",
-    });
+    res.redirect(
+      `http://localhost:3000/signup?error=${encodeURIComponent(
+        "Internal Error."
+      )}`
+    );
   }
 };
 
@@ -446,7 +453,7 @@ export const contactUs = async (req: Request, res: Response) => {
   try {
     await contactApp(email, subject, message);
     console.log("Email sent successfully");
-    res.status(200).json({message: "Email sent successfully "})
+    res.status(200).json({ message: "Email sent successfully " });
   } catch (err) {
     console.log("CONTACT US ERROR ", err);
     res.status(500).json({ error: "Internal error" });

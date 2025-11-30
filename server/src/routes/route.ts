@@ -23,9 +23,9 @@ router.post("/signUp", signUpValidation(), signUp);
 router.post("/login", loginValidation(), Login);
 router.post("/contact", contactUs);
 router.get("/google/signup", googleSignUpInit);
-router.get("/auth/google/callback", GoogleSignUp);
+router.get("/auth/google/signup/callback", GoogleSignUp);
 router.get("/google/login", GoogleInit);
-router.get("/auth/google/callback", GoogleLogin);
+router.get("/auth/google/login/callback", GoogleLogin);
 
 router.get("/user/:userId", authenticate, initialLogin);
 router.get("/search", authenticate, searchBar);
