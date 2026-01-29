@@ -5,7 +5,7 @@ import AboutSection from "@/components/homeScreen(public)/AboutSection";
 import CtaSection from "@/components/homeScreen(public)/CtaSection";
 export default function HomePage(): React.ReactElement {
   return (
-    <div className="w-full flex flex-col items-center bg-[#060010] ">
+    <div className="w-full flex flex-col items-center bg-[#060010]  ">
       {/* MAIN SECTION  */}
       <HeroSection />
 

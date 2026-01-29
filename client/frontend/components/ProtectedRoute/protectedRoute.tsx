@@ -12,9 +12,10 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       const token = localStorage.getItem("token");
       if (!token) {
         router.replace("/signup");
-      } else {
-        setIsAuthenticated(true);
+        setIsAuthenticated(false)
+        return;
       }
+      setIsAuthenticated(true);
     };
     checkAuth();
   }, [router]);
@@ -22,4 +23,5 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (isAuthenticated) {
     return <>{children}</>;
   }
+  
 };

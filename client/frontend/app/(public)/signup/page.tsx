@@ -1,14 +1,14 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MessageCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { signUp as signUpApi } from "@/lib/api/auth";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function SignUp(): React.ReactElement {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const errorParam = searchParams.get("error");
 
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,7 @@ export default function SignUp(): React.ReactElement {
       }
       console.log("Signed Up Successfully");
       setLoading(false);
-      router.push("/login");
+      window.location.href = "/login";
     } catch (err) {
       console.log(err);
       setError(["Internal Error"]);
@@ -66,7 +66,7 @@ export default function SignUp(): React.ReactElement {
     window.location.href = "http://localhost:3001/google/signup";
   };
   return (
-    <section className="w-full min-h-screen px-9 sm:py-0 md:py-24 bg-[#060010] text-white flex flex-col  items-center justify-center ">
+    <section className="w-full min-h-screen px-9 sm:py-0 md:p-24 bg-[#060010] text-white flex flex-col  items-center justify-center ">
       {/* HEADER  */}
       <div className=" flex flex-col  w-md space-y-6 md:space-y-4 px-9">
         <div className="flex flex-col items-center justify-center gap-3">

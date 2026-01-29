@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { MessageCircle, Eye, EyeOff, Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ import Image from "next/image";
 export default function LogIn(): React.ReactElement {
   const searchParams = useSearchParams();
   const errorParams = searchParams.get("error");
+  const token = searchParams.get("token");
 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -64,8 +66,11 @@ export default function LogIn(): React.ReactElement {
   useEffect(() => {
     if (errorParams) {
       window.history.replaceState({}, "", "/login");
+    } else if (token) {
+      localStorage.setItem("token", token);
+      router.push("/HomeScreen");
     }
-  });
+  }, [token, errorParams, router]);
   return (
     <section className="w-full min-h-screen px-9 sm:py-0 md:py-24 bg-[#060010] text-white flex flex-col  items-center justify-center ">
       {/* HEADER  */}

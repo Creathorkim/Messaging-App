@@ -12,17 +12,26 @@ import prisma from "./config/prismaClient";
 import dotenv from "dotenv";
 dotenv.config();
 import router from "./routes/route";
+import { socketHandler } from "./socket";
 
 const app = express();
 
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+socketHandler(io);
 
 app.use(
   cors({
     origin: "http://localhost:3000",
+    // methods: ["GET", "POST"],
     credentials: true,
-  })
+  }),
 );
 app.use(morgan("dev"));
 app.use(passport.initialize());
@@ -50,8 +59,8 @@ passport.use(
         console.log(err);
         return done(err);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.use(
@@ -78,8 +87,8 @@ passport.use(
         console.log(err);
         return done(false, err);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.use(
@@ -105,8 +114,8 @@ passport.use(
         console.log(err);
         return done(err);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.use(
@@ -140,11 +149,11 @@ passport.use(
       } catch (err) {
         return done(err);
       }
-    }
-  )
+    },
+  ),
 );
 
 const PORT = 3001;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`App running on http://localhost:${PORT}`);
 });

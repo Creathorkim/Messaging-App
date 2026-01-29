@@ -25,6 +25,7 @@ model User {
   messages             Messages[]
  sentFriendRequest     FriendRequest[] @relation("FriendRequestSender")
  receivedFriendRequest FriendRequest[] @relation("FriendRequestReceiver")
+ notifications         Notification[]
 }
 
 
@@ -50,11 +51,13 @@ model Messages {
   groupId      String?
   directChat   DirectChat? @relation(fields: [directChatId], references: [id], onDelete: Cascade)
   groupChat    GroupChat?  @relation(fields: [groupId], references: [id], onDelete: Cascade)  
-  content      String
-  file         String?
-  imageUrl     String?
+  content      String?
+  fileUrl      String?
   voiceMessage String?
   seen         Boolean @default(false)
+  messageId    String?
+  message     Messages? @relation("Replies", fields: [messageId], references: [id], onDelete: Cascade)
+  replies     Messages[] @relation("Replies")
 }
 
 model GroupChat {
@@ -101,4 +104,16 @@ model FriendRequest {
   createdAt   DateTime @default(now())
 
  @@unique([senderId, receiverId])
+}
+
+model Notification {
+  id        String @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  read      Boolean? @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

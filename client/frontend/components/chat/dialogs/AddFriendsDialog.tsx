@@ -1,4 +1,17 @@
-import { ArrowLeft, Search } from "lucide-react";
+"use client";
+
+import { ArrowLeft, Search, UserX, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { handleSearch } from "@/lib/api/auth";
+import { UserType } from "@/lib/context/UserProvider";
+import {
+  sendFriendRequest,
+  cancelRequest,
+  acceptFriendRequest,
+} from "@/lib/api/auth";
+import { useContext } from "react";
+import { UserContext } from "@/lib/context/UserProvider";
+import { useRouter } from "next/navigation";
 type AddFriendsDialogType = {
   handleAddFriendsDialog: () => void;
 };
@@ -6,72 +19,209 @@ type AddFriendsDialogType = {
 export default function AddFriendsDialog({
   handleAddFriendsDialog,
 }: AddFriendsDialogType) {
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [user, setUser] = useState<UserType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const { data } = useContext(UserContext)!;
+
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  };
+
+  const handleSearchSubmit = async (e: React.FormEvent<HTMLElement>) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await handleSearch(searchInput);
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setUser(res.data?.usersWithStatus);
+        console.log(res.data?.usersWithStatus);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const addFriend = async (receiverId: string) => {
+    setLoading(true);
+    try {
+      await sendFriendRequest(receiverId);
+      setLoading(false);
+      window.location.assign("/HomeScreen");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const cancelRequestFunc = async (receiverId: string) => {
+    setLoading(true);
+    try {
+      await cancelRequest(receiverId);
+      setLoading(false);
+      window.location.assign("/HomeScreen");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const acceptFriend = async (requestId: string) => {
+    setLoading(true);
+    try {
+      await acceptFriendRequest(requestId);
+      setLoading(false);
+      window.location.assign("/HomeScreen");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  useEffect(() => {
+    if (!searchInput) return;
+
+    const timeout = setTimeout(async () => {
+      setError("");
+      const res = await handleSearch(searchInput);
+      if (res.error) {
+        setError(res.error);
+      }
+      setUser(res.data?.usersWithStatus);
+      console.log(res.data?.usersWithStatus);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
   return (
     <div className="fixed inset-0 w-full min-h-screen bg-stone-900/30 backdrop-blur-sm flex flex-col items-center mx-auto justify-center p-5 ">
       <div className="space-y-3  flex flex-col bg-stone-900 w-full lg:w-4xl  p-5 rounded-lg border border-gray-400 shadow-lg shadow-[#7F56D9] h-md overflow-y-auto ">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-5">
           <ArrowLeft
             className="text-gray-400 cursor-pointer"
             onClick={handleAddFriendsDialog}
           />
-          <h3 className="text-gray-400 text-sm">Back Home</h3>
+          <h2 className="text-2xl font-bold text-white ">Add Friends</h2>
         </div>
 
-        <h2 className="text-4xl font-bold text-white mb-5">Add Friends</h2>
         <div className="flex items-center gap-4 overflow-hidden">
           <div className="flex flex-1  items-center gap-1 px-4 py-1 bg-stone-600 rounded-lg">
-            <Search className="text-stone-800" />
-            <form className="w-full">
+            <Search className="text-[#7F56D9]" />
+            <form className="w-full" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
                 className=" text-white py-2 px-3 outline-none w-full placeholder:tracking-tighter"
                 placeholder="Search by username..."
+                onChange={handleSearchInput}
               />
             </form>
           </div>
         </div>
-        <div className="flex flex-col">
-          <h2 className=" pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-white">
-            Search Result
-          </h2>
-          <div className="flex justify-between items-center pt-5 py-3 md:px-3 hover:bg-slate-900 rounded-lg cursor-pointer">
-            <div className="flex gap-3 items-center">
-              <div
-                className="bg-cover bg-center rounded-full size-12"
-                style={{
-                  backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuBsPIIw01_4Xy-m5x8Vd4ACzdNn3sUJVfwP3KUqsQEWGntOchD1KXwrA3JG-TvuWzWbdepeyitRudEcqAkyxyddYK7H9Uqhs9sfHxtw8bRcmQCjGpBY-XR1i9WSf8SpGRrJwqTf3SkpH6cWkg1So9F80vEmEIf6GAciz5IhBiGbQtDDxqDgdq4FFKL5bYFVcuaTx7zIc8xxXQrw6UuZA5lnxFocsoYdhXkB8Z4Jm74IMP-Yx2XehVvSajGubFVe8WLy1D6Xcuyy-w4")`,
-                }}
-              ></div>
-              <div>
-                <h1 className="font-semibold text-white ">Olivia Chen</h1>
-                <p className="text-sm text-slate-500">olivia.chen</p>
-              </div>
+
+        {error && (
+          <div className="flex flex-col items-center justify-center  border border-[#7F56D9] rounded-lg p-5 mt-3">
+            <div className="flex items-center justify-center w-20 h-20 bg-stone-700 rounded-full mb-3">
+              <UserX size={30} />
             </div>
-            <button className="cursor-pointer bg-[#7F56D9] hover:bg-purple-600 rounded-lg text-white py-2 px-3 text-sm">
-              Add Friend
-            </button>
-          </div>
-          <div className="flex justify-between items-center pt-5 py-3 md:px-3 hover:bg-slate-900 rounded-lg cursor-pointer">
-            <div className="flex gap-3 items-center">
-              <div
-                className="bg-cover bg-center rounded-full size-12"
-                style={{
-                  backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwpzKwq_oXolxWKHmhl1Fuv2euMgNHganbjKg8GCQoxh3XUIoIA_x7Os9FOSTxYvDvZxI-Bu4SNJamOg5NbLTH6JBcy3bZOvooEe1tylAJN1kg8iXL5hhhT5BFSG8p2mPVEIJT6IZnDqSO_WnsTQe_WouMjGVbXJSXnjJ-hNKFrIIEF_I4nhKsG73hPTWulmTsDgL0zXoIOIjF3MJoPTcxdEM2HjF3IoepSkgyhnTqH8jda3e-5_bthPZev0tR4g7Ce2Twgg67Nt0")`,
-                }}
-              ></div>
-              <div>
-                <h1 className="font-semibold text-white ">Ben Carter</h1>
-                <p className="text-sm text-slate-500">bencarter</p>
-              </div>
+            <div className="flex flex-col items-center justify-center text-center space-y-2">
+              <h1 className="text-white text-2xl">{error}</h1>
+              <p className="tracking-tighter text-slate-400">
+                We couldn&apos;t find anyone with that username or email. Please
+                check the spelling and try again.
+              </p>
             </div>
-            <button
-              disabled
-              className="bg-gray-400 rounded-lg text-white py-2 px-3 text-sm"
-            >
-              Request sent
-            </button>
           </div>
-        </div>
+        )}
+        {user?.length > 0 && (
+          <div className="flex flex-col">
+            <h2 className=" pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-white">
+              Search Result
+            </h2>
+            {user.map((searchResult, index) => (
+              <div
+                key={index}
+                className="flex justify-between gap-5 items-center pt-5 py-3 md:px-3 "
+              >
+                <div className="flex gap-3 items-center">
+                  <div
+                    className="bg-cover bg-center rounded-full size-12"
+                    style={{
+                      backgroundImage: `url(${searchResult.profileImage})`,
+                    }}
+                  ></div>
+                  <div>
+                    <h1 className="font-semibold text-white ">
+                      {searchResult.username}
+                    </h1>
+                    <p className="text-sm text-slate-500">
+                      @{searchResult.username}
+                    </p>
+                  </div>
+                </div>
+
+                {searchResult.status === "friends" ? (
+                  <button
+                    className="bg-gray-500/20 text-white text-md  tracking-tight font-semibold py-2 px-3 rounded-lg text-sm"
+                    disabled
+                  >
+                    Friends
+                  </button>
+                ) : searchResult.status === "pending" ? (
+                  <div className="flex gap-2">
+                    <button
+                      className="bg-gray-500/20 text-white text-md  tracking-tight font-semibold py-2 px-3 rounded-lg text-sm"
+                      disabled
+                    >
+                      Request sent
+                    </button>
+                    <button
+                      className="bg-[#7F56D9] py-2 px-3 rounded-lg text-white  text-sm cursor-pointer  tracking-tight text-md font-semibold"
+                      onClick={() => cancelRequestFunc(searchResult.id)}
+                    >
+                      {loading ? (
+                        <div className="flex gap-3">
+                          <Loader2 className="animate-spin text-white  text-center" />
+                          <p>Cancel</p>
+                        </div>
+                      ) : (
+                        <p>Cancel</p>
+                      )}
+                    </button>
+                  </div>
+                ) : searchResult.status === "awaiting_response" ? (
+                  <button
+                    className="bg-[#7F56D9] cursor-pointer text-sm py-2 px-3 rounded-lg text-white tracking-tight font-semibold"
+                    onClick={() => acceptFriend(searchResult.requestId)}
+                  >
+                    {loading ? (
+                      <div className="flex gap-3">
+                        <Loader2 className="animate-spin text-white  text-center" />
+                        <p>Accept</p>
+                      </div>
+                    ) : (
+                      <p>Accept</p>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    className="bg-[#7F56D9] py-2 px-3 rounded-lg cursor-pointer text-white tracking-tight text-sm font-semibold"
+                    onClick={() => addFriend(searchResult.id)}
+                  >
+                    {loading ? (
+                      <div className="flex gap-3">
+                        <Loader2 className="animate-spin text-white  text-center" />
+                        <p>Add Friend</p>
+                      </div>
+                    ) : (
+                      <p>Add Friend</p>
+                    )}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

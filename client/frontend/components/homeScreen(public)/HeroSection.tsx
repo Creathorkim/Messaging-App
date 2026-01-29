@@ -8,7 +8,7 @@ export function HeroSection() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="w-full flex flex-col items-center justify-center text-center p-24  gap-10 text-white"
+      className="w-full flex flex-col items-center justify-center text-center p-24 h-[100vh] gap-10 text-white"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}

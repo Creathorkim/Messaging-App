@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 export default function Contact(): React.ReactElement {

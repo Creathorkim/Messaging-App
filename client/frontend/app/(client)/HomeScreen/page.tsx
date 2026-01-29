@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import ChatSideBar from "@/components/chat/ChatSideBar";
 import ChatArea from "@/components/chat/ChatArea";
 import UserProfilePanel from "@/components/chat/UserProfilePanel";
@@ -11,19 +10,33 @@ import AddFriendsDialog from "@/components/chat/dialogs/AddFriendsDialog";
 import ProfileDialog from "@/components/chat/dialogs/ProfileDialog";
 import EditProfileDialog from "@/components/chat/dialogs/handleEditProfileDialog";
 import SettingsDialog from "@/components/chat/dialogs/SettingsDialog";
-import ChangePasswordDialog from "@/components/chat/dialogs/ChangePasswordDialog";
 
+export type selectedFriendProp = {
+  id: string;
+  username: string;
+  profileImage: string;
+  isOnline: boolean;
+  lastMessage?: string;
+  unreadCount?: number;
+  bio?: string;
+  createdAt?: number;
+  chatId?: string;
+};
 export default function ClientHomePage() {
-  const paramsData = useSearchParams();
   const [isGroup, setIsGroup] = useState(false);
   const [isInbox, setIsInbox] = useState(false);
   const [addFriends, setAddFriends] = useState(false);
   const [settings, setSettings] = useState(false);
   const [adminProfile, setAdminProfile] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
-  const [changePassword, setChangePassword] = useState(false);
+  const [chatArea, setChatArea] = useState(false);
+  const [userProfilePanel, setUserProfilePanel] = useState(false);
+  const [selectedFriend, setSelectedFriend] =
+    useState<selectedFriendProp | null>(null);
 
-  const token = paramsData.get("token");
+  const [chatId, setChatId] = useState("");
+  const [friendId, setFriendId] = useState("");
+
   const handleGroupDialog = () => {
     setIsGroup(!isGroup);
   };
@@ -46,20 +59,24 @@ export default function ClientHomePage() {
     setEditProfile(!editProfile);
   };
 
-  const handleChangePasswordDialog = () => {
-    setChangePassword(!changePassword);
+  const handleChatArea = (
+    friend: selectedFriendProp,
+    id: string,
+    fId: string,
+  ) => {
+    setChatArea(!chatArea);
+    setSelectedFriend(friend);
+    setChatId(id);
+    setFriendId(fId);
   };
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-      window.history.replaceState({}, "", "/HomeScreen");
-    }
-  }, [token]);
+  const handleUserProfilePanel = () => {
+    setUserProfilePanel(!userProfilePanel);
+  };
 
   return (
     <div>
-      <section className="bg-[#060010] h-screen overflow-hidden flex flex-row  w-full text-white pt-3 px-2 md:py-0 md:px-0">
+      <section className="bg-[#060010] h-screen overflow-hidden flex flex-row  w-full text-white pt-1 px-1 md:py-0 md:px-0">
         {/* CHATSIDEBAR  */}
 
         <ChatSideBar
@@ -68,13 +85,23 @@ export default function ClientHomePage() {
           handleInboxDialog={handleInboxDialog}
           handleGroupDialog={handleGroupDialog}
           handleAddFriendsDialog={handleAddFriendsDialog}
+          handleChatArea={handleChatArea}
         />
 
         {/* CHAT AREA */}
-        <ChatArea />
+        {chatArea && selectedFriend && (
+          <ChatArea
+            handleUserProfilePanel={handleUserProfilePanel}
+            friend={selectedFriend}
+            chatId={chatId}
+            friendId={friendId}
+          />
+        )}
 
         {/* USER PROFILE PANEL  */}
-        <UserProfilePanel />
+        {userProfilePanel && selectedFriend && (
+          <UserProfilePanel friend={selectedFriend} />
+        )}
       </section>
 
       {/* // CREATE GROUP DIALOG */}
@@ -100,20 +127,7 @@ export default function ClientHomePage() {
       {editProfile && <EditProfileDialog handleEditDialog={handleEditDialog} />}
 
       {/* CHAT SETTINGS DIALOG  */}
-      {settings && (
-        <SettingsDialog
-          handleSettings={handleSettings}
-          handleChangePasswordDialog={handleChangePasswordDialog}
-        />
-      )}
-
-      {/* CHANGE PASSWORD SETTING DIALOG  */}
-      {changePassword && (
-        <ChangePasswordDialog
-          handleChangePasswordDialog={handleChangePasswordDialog}
-          handleEditDialog={handleEditDialog}
-        />
-      )}
+      {settings && <SettingsDialog handleSettings={handleSettings} />}
     </div>
   );
 }
