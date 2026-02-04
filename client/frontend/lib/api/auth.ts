@@ -253,6 +253,30 @@ export const chatHistory = async (chatId: string) => {
   }
 };
 
+export const groupChatHistory = async (groupId: string) => {
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(`${Api}/chat/GroupChat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        body: JSON.stringify({ groupId }),
+      },
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.log(data.error);
+      return { error: data.error };
+    }
+    return { data: data };
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const uploadFileApi = async (form: FormData) => {
   const token = localStorage.getItem("token");
 
@@ -270,5 +294,110 @@ export const uploadFileApi = async (form: FormData) => {
     return { data: data.data };
   } catch (err) {
     console.log(err);
+  }
+};
+
+export const CreateGroup = async (groupId: FormData) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${Api}/createGroup`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: groupId,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log(data.error);
+      return { error: data.error };
+    }
+    console.log(data);
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong." };
+  }
+};
+
+export const leaveGroup = async (groupId: string) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${Api}/exitGroup`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: groupId,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log(data.error);
+      return { error: data.error };
+    }
+    console.log(data);
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong." };
+  }
+};
+
+export const unFriendUser = async (friendId: string) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${Api}/unfriendUser`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: friendId,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log(data.error);
+      return { error: data.error };
+    }
+    console.log(data);
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong." };
+  }
+};
+
+export const addMemberToGroup = async (
+  groupId: string,
+  newMembers: string[],
+) => {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${Api}/addMembersToGroup`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        groupId,
+        newMembers,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log(data.error);
+      return { error: data.error };
+    }
+    console.log(data);
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong." };
   }
 };

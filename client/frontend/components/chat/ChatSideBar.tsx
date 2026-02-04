@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, SetStateAction } from "react";
 import { UserContext } from "@/lib/context/UserProvider";
 import { getSocket } from "@/lib/socket/socket";
 import { MessageSquare } from "lucide-react";
 import { selectedFriendProp } from "@/app/(client)/HomeScreen/page";
-import type { Friend } from "@/lib/context/UserProvider";
 import {
   Settings,
   Search,
@@ -13,6 +12,8 @@ import {
   UsersRound,
   MessageSquarePlus,
 } from "lucide-react";
+import type { Group } from "@/lib/context/UserProvider";
+import type { MobileView } from "@/app/(client)/HomeScreen/page";
 
 type ChatSidebarType = {
   handleAdminProfileDialog: () => void;
@@ -21,10 +22,13 @@ type ChatSidebarType = {
   handleGroupDialog: () => void;
   handleAddFriendsDialog: () => void;
   handleChatArea: (
-    friend: selectedFriendProp,
-    chatId: string,
-    fId: string,
+    friend?: selectedFriendProp,
+    group?: Group,
+    groupId?: string,
+    id?: string,
+    fId?: string,
   ) => void;
+  setMobileView: React.Dispatch<SetStateAction<MobileView>>
 };
 
 type usersOnlineType = {
@@ -41,8 +45,9 @@ export default function ChatSideBar({
   handleGroupDialog,
   handleAddFriendsDialog,
   handleChatArea,
+  setMobileView
 }: ChatSidebarType) {
-  const { data, friends } = useContext(UserContext)!;
+  const { data, friends, group } = useContext(UserContext)!;
   const [usersOnline, setUsersOnline] = useState<usersOnlineType[]>([]);
   const [amOnline, setAmOnline] = useState(false);
   const user = data?.user;
@@ -75,7 +80,7 @@ export default function ChatSideBar({
   }, [Socket]);
 
   return (
-    <div className="flex flex-col bg-black w-full lg:w-80 space-y-4  p-2 pt-4  shrink-0 lg:border-r border-gray-600 overflow-y-auto">
+    <div className="flex flex-col h-full bg-black w-full lg:w-80 space-y-4  p-2 pt-4  shrink-0 lg:border-r border-gray-600 overflow-y-auto">
       {/* FIRST HEADER  */}
       <div className="flex items-center justify-between ">
         <div className="flex items-center gap-2">
@@ -114,18 +119,7 @@ export default function ChatSideBar({
       </div>
 
       {/* SECOND HEADER  */}
-      <div className="flex flex-row items-center gap-3 md:gap-2 mt-2  ">
-        <div className="flex bg-stone-900 rounded-lg items-center p-2 flex-1 md:w-6">
-          <Search size={24} className="text-white" />
-
-          <form action="">
-            <input
-              type="text"
-              className="px-2 py-1  text-white rounded-lg outline-none"
-              placeholder="Search friends"
-            />
-          </form>
-        </div>
+      <div className="flex flex-row items-center justify-end   gap-3 md:gap-2 mt-2  ">
         <div className="relative">
           <button
             className="bg-[#7F56D9] p-3 rounded-lg cursor-pointer"
@@ -174,41 +168,7 @@ export default function ChatSideBar({
       {/* FOURTH SECTION  */}
       <div className="flex flex-col space-y-2 mt-2 h-full">
         <h1 className="text-gray-500 font-medium">Conversations</h1>
-        {friends && friends.length > 0 ? (
-          friends.map((fr, index) => (
-            <div
-              key={index}
-              className="flex flex-row items-center p-2 gap-2 cursor-pointer rounded-lg hover:bg-stone-900"
-              onClick={() => {
-                handleChatArea(fr, fr.chatId, fr.id);
-              }}
-            >
-              <div className="relative">
-                <div
-                  className="rounded-full bg-cover size-12 border shadow-[0_0_4px_2px_#7F56D9]"
-                  style={{ backgroundImage: `url(${fr.profileImage})` }}
-                ></div>
-              </div>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col">
-                  <h1 className="text-white text-sm font-semibold">
-                    {fr.username}
-                  </h1>
-                  <p className="text-xs text-gray-400 truncate">
-                    {fr.lastMessage ?? "📎 Attachment"}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end">
-                  {fr.unreadCount > 0 && (
-                    <div className="flex items-center justify-center bg-[#7F56D9] text-white size-5 rounded-full p-3 text-sm font-medium">
-                      {fr.unreadCount}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
+        {friends && friends.length === 0 && group.length === 0 && (
           <div className="flex flex-col items-center justify-center text-center my-auto min-h-full space-y-5 px-4">
             <div className="flex items-center justify-center w-full rounded-lg bg-linear-to-tr from-purple-800 py-8 to-purple-400">
               <MessageSquare size={40} />
@@ -227,6 +187,73 @@ export default function ChatSideBar({
             </button>
           </div>
         )}
+        {friends.map((fr, index) => (
+          <div
+            key={index}
+            className="flex flex-row items-center p-2 gap-2 cursor-pointer rounded-lg hover:bg-stone-900"
+            onClick={() => {
+              handleChatArea(fr, undefined, undefined, fr.chatId, fr.id);
+              setMobileView("chat")
+            }}
+          >
+            <div className="relative">
+              <div
+                className="rounded-full bg-cover size-12 border shadow-[0_0_4px_2px_#7F56D9]"
+                style={{ backgroundImage: `url(${fr.profileImage})` }}
+              ></div>
+            </div>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col">
+                <h1 className="text-white text-sm font-semibold">
+                  {fr.username}
+                </h1>
+                <p className="text-xs text-gray-400 truncate">
+                  {fr.lastMessage}
+                </p>
+              </div>
+              <div className="flex flex-col items-end">
+                {fr.unreadCount > 0 && (
+                  <div className="flex items-center justify-center bg-[#7F56D9] text-white size-5 rounded-full p-3 text-sm font-medium">
+                    {fr.unreadCount}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {group.map((gr, index) => (
+          <div
+            key={index}
+            className="flex flex-row items-center p-2 gap-2 cursor-pointer rounded-lg hover:bg-stone-900"
+            onClick={() => {
+              handleChatArea(undefined, gr, gr.groupId, undefined, undefined);
+              setMobileView("chat")
+            }}
+          >
+            <div className="relative">
+              <div
+                className="rounded-full bg-cover size-12 border shadow-[0_0_4px_2px_#7F56D9]"
+                style={{ backgroundImage: `url(${gr.imageUrl})` }}
+              ></div>
+            </div>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col">
+                <h1 className="text-white text-sm font-semibold">{gr.name}</h1>
+                <p className="text-xs text-gray-400 truncate">
+                  {gr.lastMessage}
+                </p>
+              </div>
+              <div className="flex flex-col items-end">
+                {gr.unreadCount > 0 && (
+                  <div className="flex items-center justify-center bg-[#7F56D9] text-white size-5 rounded-full p-3 text-sm font-medium">
+                    {gr.unreadCount}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
 
         {/* ADD FRIEND BUTTON  */}
         <div className="sticky h-full sm:bottom-40 md:bottom-0  flex items-end justify-end p-2">

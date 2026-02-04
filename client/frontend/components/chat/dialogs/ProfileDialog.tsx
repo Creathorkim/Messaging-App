@@ -2,7 +2,6 @@ import { UserPen, X } from "lucide-react";
 import { useState, useEffect, useContext } from "react";
 import { UserContext } from "@/lib/context/UserProvider";
 import { User } from "@/lib/context/UserProvider";
-
 type profileDialogType = {
   handleAdminProfileDialog: () => void;
   handleEditDialog: () => void;
@@ -37,11 +36,8 @@ export default function ProfileDialog({
                 backgroundImage: `url(${user?.profileImage})`,
               }}
             ></div>
-            {user?.isOnline ? (
-              <span className="absolute rounded-full bg-green-500 w-5 h-5 bottom-2 left-23 shadow shadow-green-500"></span>
-            ) : (
-              <span className="absolute rounded-full bg-gray-500 w-5 h-5 bottom-2 left-23 shadow"></span>
-            )}
+
+            <span className="absolute rounded-full bg-green-500 w-5 h-5 bottom-2 left-23 shadow shadow-green-500"></span>
           </div>
         </div>
 

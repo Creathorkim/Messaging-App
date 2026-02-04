@@ -29,6 +29,24 @@ export type Friend = {
   unreadCount: number;
   chatId: string;
 };
+type Sender = {
+  id: string;
+  senderImage: string;
+  username: string;
+};
+
+export type Group = {
+  sender: Sender;
+  name: string;
+  id: string;
+  description: string;
+  imageUrl: string;
+  createdAt: string;
+  lastMessage: string;
+  unreadCount: number;
+  groupId: string;
+  groupRole: string;
+};
 
 type UserType = {
   user: User;
@@ -39,6 +57,7 @@ type UserContextType = {
   data: UserType | null;
   friends: Friend[];
   setFriends: React.Dispatch<React.SetStateAction<Friend[]>>;
+  group: Group[];
 };
 export const UserContext = createContext<UserContextType | null>(null);
 
@@ -49,6 +68,7 @@ type UserDataProps = {
 export const UserData = ({ children }: UserDataProps) => {
   const [data, setData] = useState<UserType | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [group, setGroup] = useState<Group[]>([]);
   const userIdRef = useRef<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
@@ -64,8 +84,10 @@ export const UserData = ({ children }: UserDataProps) => {
     const init = async () => {
       try {
         const fetched = await fetchUser();
+        console.log(fetched);
         setData(fetched);
         setFriends(fetched.friends);
+        setGroup(fetched.group);
 
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -114,6 +136,14 @@ export const UserData = ({ children }: UserDataProps) => {
       );
     });
 
+    socket.on("group:LastMessage", (dt) => {
+      setGroup((prev) =>
+        prev.map((gr) =>
+          gr.groupId === dt.groupId ? { ...gr, lastMessage: dt.content } : gr,
+        ),
+      );
+    });
+
     socket.on("unreadCount", (dt) => {
       const isNotFromMe = dt.senderId !== userIdRef.current;
 
@@ -132,7 +162,7 @@ export const UserData = ({ children }: UserDataProps) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ data, friends, setFriends }}>
+    <UserContext.Provider value={{ data, friends, setFriends, group }}>
       {children}
     </UserContext.Provider>
   );

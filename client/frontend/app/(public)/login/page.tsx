@@ -52,7 +52,7 @@ export default function LogIn(): React.ReactElement {
       }
       console.log("Loggin in successfully");
       setLoading(false);
-      router.push("/homeScreen");
+      router.push("/HomeScreen");
     } catch (err) {
       console.log(err);
       setError(["Internal Error"]);

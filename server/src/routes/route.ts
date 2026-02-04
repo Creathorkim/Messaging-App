@@ -20,6 +20,11 @@ import {
   deleteAccount,
   cancelRequest,
   fileUpload,
+  createGroup,
+  groupChatHistory,
+  unFriend,
+  leaveGroup,
+  addMemberToGroup,
 } from "../controllers/controllers";
 import { signUpValidation, loginValidation } from "../middlewares/validation";
 import cloudinary from "../config/cloudinary";
@@ -50,10 +55,11 @@ router.put(
   "/update",
   authenticate,
   upload.single("profilePicture"),
-  updateProfile
+  updateProfile,
 );
 router.get("/search", authenticate, searchBar);
 router.get("/chat/:chatId", authenticate, chatHistory);
+router.post("/chat/GroupChat", authenticate, groupChatHistory);
 
 router.post("/uploads", authenticate, upload.single("file"), fileUpload);
 
@@ -63,4 +69,13 @@ router.put("/friend/accept/:requestId", authenticate, acceptFriendRequest);
 router.delete("/friend/reject", authenticate, rejectFriendRequest);
 router.delete("/friend/cancelRequest", authenticate, cancelRequest);
 router.delete("/deleteAccount", authenticate, deleteAccount);
+router.post("/unfriendUser", authenticate, unFriend);
+router.post("/exitGroup", authenticate, leaveGroup);
+router.post("/addMembersToGroup", authenticate, addMemberToGroup);
+router.post(
+  "/createGroup",
+  authenticate,
+  upload.single("imageUrl"),
+  createGroup,
+);
 export default router;

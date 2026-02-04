@@ -10,7 +10,7 @@ import AddFriendsDialog from "@/components/chat/dialogs/AddFriendsDialog";
 import ProfileDialog from "@/components/chat/dialogs/ProfileDialog";
 import EditProfileDialog from "@/components/chat/dialogs/handleEditProfileDialog";
 import SettingsDialog from "@/components/chat/dialogs/SettingsDialog";
-
+import type { Group } from "@/lib/context/UserProvider";
 export type selectedFriendProp = {
   id: string;
   username: string;
@@ -22,6 +22,9 @@ export type selectedFriendProp = {
   createdAt?: number;
   chatId?: string;
 };
+
+export type MobileView = "sidebar" | "chat" | "profile";
+
 export default function ClientHomePage() {
   const [isGroup, setIsGroup] = useState(false);
   const [isInbox, setIsInbox] = useState(false);
@@ -30,12 +33,14 @@ export default function ClientHomePage() {
   const [adminProfile, setAdminProfile] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
   const [chatArea, setChatArea] = useState(false);
-  const [userProfilePanel, setUserProfilePanel] = useState(false);
   const [selectedFriend, setSelectedFriend] =
     useState<selectedFriendProp | null>(null);
 
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [groupId, setGroupId] = useState("");
   const [chatId, setChatId] = useState("");
   const [friendId, setFriendId] = useState("");
+  const [mobileView, setMobileView] = useState<MobileView>("sidebar");
 
   const handleGroupDialog = () => {
     setIsGroup(!isGroup);
@@ -60,48 +65,66 @@ export default function ClientHomePage() {
   };
 
   const handleChatArea = (
-    friend: selectedFriendProp,
-    id: string,
-    fId: string,
+    friend?: selectedFriendProp,
+    group?: Group,
+    groupId?: string,
+    id?: string,
+    fId?: string,
   ) => {
-    setChatArea(!chatArea);
-    setSelectedFriend(friend);
-    setChatId(id);
-    setFriendId(fId);
-  };
-
-  const handleUserProfilePanel = () => {
-    setUserProfilePanel(!userProfilePanel);
+    setChatArea(true);
+    setSelectedFriend(friend!);
+    setSelectedGroup(group!);
+    setGroupId(groupId!);
+    setChatId(id!);
+    setFriendId(fId!);
   };
 
   return (
     <div>
-      <section className="bg-[#060010] h-screen overflow-hidden flex flex-row  w-full text-white pt-1 px-1 md:py-0 md:px-0">
+      <section className="bg-[#060010] h-screen overflow-hidden flex flex-row w-full text-white pt-1 px-1 md:py-0 md:px-0">
         {/* CHATSIDEBAR  */}
 
-        <ChatSideBar
-          handleAdminProfileDialog={handleAdminProfileDialog}
-          handleSettings={handleSettings}
-          handleInboxDialog={handleInboxDialog}
-          handleGroupDialog={handleGroupDialog}
-          handleAddFriendsDialog={handleAddFriendsDialog}
-          handleChatArea={handleChatArea}
-        />
+        <div
+          className={`h-full ${mobileView !== "sidebar" ? "hidden lg:block" : "w-full lg:w-80"}`}
+        >
+          <ChatSideBar
+            handleAdminProfileDialog={handleAdminProfileDialog}
+            handleSettings={handleSettings}
+            handleInboxDialog={handleInboxDialog}
+            handleGroupDialog={handleGroupDialog}
+            handleAddFriendsDialog={handleAddFriendsDialog}
+            handleChatArea={handleChatArea}
+            setMobileView={setMobileView}
+          />
+        </div>
 
         {/* CHAT AREA */}
-        {chatArea && selectedFriend && (
-          <ChatArea
-            handleUserProfilePanel={handleUserProfilePanel}
-            friend={selectedFriend}
-            chatId={chatId}
-            friendId={friendId}
-          />
-        )}
+        <div
+          className={`${mobileView !== "chat" ? "hidden lg:block" : "flex"} w-full`}
+        >
+          {chatArea && (selectedFriend || selectedGroup) && (
+            <ChatArea
+              friend={selectedFriend!}
+              chatId={chatId}
+              friendId={friendId}
+              group={selectedGroup!}
+              groupId={groupId}
+              setMobileView={setMobileView}
+            />
+          )}
+        </div>
 
         {/* USER PROFILE PANEL  */}
-        {userProfilePanel && selectedFriend && (
-          <UserProfilePanel friend={selectedFriend} />
-        )}
+        <div
+          className={`${mobileView !== "profile" ? "hidden md:block" : "w-full md:w-[470px]"} `}
+        >
+          {mobileView === "profile" && selectedFriend && (
+            <UserProfilePanel
+              friend={selectedFriend}
+              setMobileView={setMobileView}
+            />
+          )}
+        </div>
       </section>
 
       {/* // CREATE GROUP DIALOG */}

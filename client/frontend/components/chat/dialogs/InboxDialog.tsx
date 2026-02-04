@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCheck } from "lucide-react";
-// import { getSocket } from "@/lib/socket/socket";
+import { getSocket } from "@/lib/socket/socket";
 import { acceptFriendRequest, rejectRequest } from "@/lib/api/auth";
 export type InboxDialogType = {
   handleInboxDialog: () => void;
@@ -23,15 +23,15 @@ type notificationGroup = Record<
 export default function InboxDialog({ handleInboxDialog }: InboxDialogType) {
   const [data, setData] = useState<notificationGroup>();
 
-  // useEffect(() => {
-  //   const Socket = getSocket()
-  //   Socket.on("notifications-data", (data) => {
-  //     setData(data.grouped);
-  //     console.log(data.grouped);
-  //   });
+  useEffect(() => {
+    const Socket = getSocket()
+    Socket.on("notifications-data", (data) => {
+      setData(data.grouped);
+      console.log(data.grouped);
+    });
 
-  //   Socket.emit("get-notifications");
-  // }, []);
+    Socket.emit("get-notifications");
+  }, []);
 
   const acceptFriend = async (requestId: string) => {
     try {

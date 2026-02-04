@@ -130,12 +130,14 @@ export const GoogleLogin = (
       "google-login",
       { session: false },
       (error: any, user: any, info: any) => {
-        if (error)
+        if (error) {
+          console.log("Google Login Error:", error);
           return res.redirect(
             `http://localhost:3000/login?error=${encodeURIComponent(
               "server error",
             )}`,
           );
+        }
         if (!user)
           return res.redirect(
             `http://localhost:3000/login?error=${encodeURIComponent(
@@ -192,12 +194,15 @@ export const GoogleSignUp = (
       "google-signup",
       { session: false },
       (error: any, user: any, info: any) => {
-        if (error)
+        if (error) {
+          console.log("Google Login Error:", error);
           return res.redirect(
             `http://localhost:3000/signup?error=${encodeURIComponent(
               "server error",
             )}`,
           );
+        }
+
         if (!user)
           return res.redirect(
             `http://localhost:3000/signup?error=${encodeURIComponent(
@@ -301,6 +306,8 @@ export const initialLogin = async (req: Request, res: Response) => {
                 createdAt: true,
                 senderId: true,
                 seen: true,
+                fileUrl: true,
+                voiceMessage: true,
               },
             },
           },
@@ -313,16 +320,23 @@ export const initialLogin = async (req: Request, res: Response) => {
             seen: false,
           },
         });
+        const lastMessagePreview = directChat?.messages[0];
+        let lastMessage = null;
+        if (lastMessagePreview) {
+          if (lastMessagePreview.content)
+            lastMessage = lastMessagePreview.content;
+          if (lastMessagePreview.voiceMessage) lastMessage = "🎤 Voice message";
+          if (lastMessagePreview.fileUrl) lastMessage = "📎 Attachment";
+        }
 
         return {
           ...fr,
           chatId: directChat?.id,
-          lastMessage: directChat?.messages[0]?.content || null,
+          lastMessage: lastMessage || null,
           unreadCount: unreadCount,
         };
       }),
     );
-
     const groupQuery = await prisma.groupMembership.findMany({
       where: { userId: userId },
       include: {
@@ -330,11 +344,64 @@ export const initialLogin = async (req: Request, res: Response) => {
       },
     });
 
-    const group = groupQuery.map((gr) => gr.group);
+    const groups = groupQuery.map((gr) => gr.group);
+
+    const groupWithLastMessage = await Promise.all(
+      groups.map(async (gr) => {
+        const groupMessage = await prisma.groupChat.findUnique({
+          where: { id: gr.id },
+          include: {
+            messages: {
+              orderBy: { createdAt: "desc" },
+              take: 1,
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                senderId: true,
+                seen: true,
+                voiceMessage: true,
+                fileUrl: true,
+              },
+            },
+          },
+        });
+
+        // const unreadCount = await prisma.messages.count({
+        //   where: { groupId: gr.id, seen: false },
+        // });
+
+        const groupRole = await prisma.groupMembership.findFirst({
+          where: {
+            userId: userId,
+            groupId: gr.id,
+          },
+        });
+
+        const lastMessagePreview = groupMessage?.messages[0];
+        let lastMessage = null;
+
+        if (lastMessagePreview) {
+          if (lastMessagePreview?.content)
+            lastMessage = lastMessagePreview.content;
+          if (lastMessagePreview?.fileUrl) lastMessage = "📎 Attachment";
+          if (lastMessagePreview?.voiceMessage)
+            lastMessage = "🎤 Voice message";
+        }
+        return {
+          ...gr,
+          lastMessage: lastMessage,
+          // unreadCount: unreadCount,
+          groupId: groupMessage?.id,
+          groupRole: groupRole?.role,
+        };
+      }),
+    );
+
     res.status(200).json({
       user: user,
       friends: chatWithLastMessage,
-      group: group,
+      group: groupWithLastMessage,
     });
   } catch (err) {
     res.status(500).json({
@@ -342,6 +409,7 @@ export const initialLogin = async (req: Request, res: Response) => {
     });
   }
 };
+
 export const chatHistory = async (req: Request, res: Response) => {
   const { chatId } = req.params;
 
@@ -366,6 +434,28 @@ export const chatHistory = async (req: Request, res: Response) => {
     res.status(500).json({
       error: "Internal error",
     });
+  }
+};
+
+export const groupChatHistory = async (req: Request, res: Response) => {
+  const { groupId } = req.body;
+  try {
+    const data = await prisma.messages.findMany({
+      where: { groupId: groupId, directChatId: null },
+      orderBy: { createdAt: "asc" },
+      include: {
+        sender: true,
+      },
+    });
+
+    if (!data) {
+      return res.status(404).json({ error: "Group not found." });
+    }
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.log(err);
+    return { error: "Server went very wrong." };
   }
 };
 
@@ -658,4 +748,140 @@ export const fileUpload = async (req: Request, res: Response) => {
 
   console.log(fileUrl);
   res.json({ data: fileUrl });
+};
+
+export const createGroup = async (req: Request, res: Response) => {
+  const imageUrl = req.file?.path;
+  const { name, memberIds } = req.body;
+
+  const admin = req.user;
+
+  try {
+    const parsedMemberIds: string[] =
+      typeof memberIds === "string" ? JSON.parse(memberIds) : memberIds;
+
+    const group = await prisma.groupChat.create({
+      data: {
+        name: name,
+        imageUrl: imageUrl ?? null,
+      },
+    });
+
+    const adminUser = await prisma.groupMembership.create({
+      data: {
+        groupId: group.id,
+        userId: admin as string,
+        role: "ADMIN",
+      },
+    });
+
+    const members = await Promise.all(
+      parsedMemberIds.map(async (id: string) => {
+        return await prisma.groupMembership.create({
+          data: {
+            groupId: group.id,
+            userId: id,
+          },
+        });
+      }),
+    );
+
+    res.status(200).json({ adminUser, members, group });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "The server went very wrong" });
+  }
+};
+
+export const leaveGroup = async (req: Request, res: Response) => {
+  const { groupId } = req.body;
+  const userId = req.user as string;
+
+  if (!userId || !groupId) {
+    return res.status(400).json({ error: "Missing data" });
+  }
+
+  try {
+    const groupLeft = await prisma.groupMembership.delete({
+      where: {
+        userId_groupId: {
+          userId: userId,
+          groupId: groupId,
+        },
+      },
+    });
+
+    return res.status(200).json(groupLeft);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Failed to leave group" });
+  }
+};
+
+export const unFriend = async (req: Request, res: Response) => {
+  const { friendId } = req.body;
+  const userId = req.user as string;
+
+  if (!friendId || !userId) {
+    return res.status(400).json({ error: "Missing data" });
+  }
+  try {
+    await prisma.directChat.deleteMany({
+      where: {
+        OR: [
+          { user1Id: userId, user2Id: friendId },
+          { user2Id: userId, user1Id: userId },
+        ],
+      },
+    });
+
+    await prisma.friendRequest.deleteMany({
+      where: {
+        OR: [
+          { senderId: userId, receiverId: friendId },
+          { receiverId: userId, senderId: friendId },
+        ],
+      },
+    });
+
+    res.status(200).json({ message: "You've unfriend user successfully." });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const addMemberToGroup = async (req: Request, res: Response) => {
+  const { groupId } = req.body;
+  const { newMembers } = req.body;
+
+  const parsedMembers: string[] =
+    typeof newMembers === "string" ? JSON.parse(newMembers) : newMembers;
+  if (!parsedMembers || !groupId) {
+    return res.status(400).json({ error: "Missing data" });
+  }
+
+  try {
+    for (const memId of parsedMembers) {
+      const alreadyMember = await prisma.groupMembership.findFirst({
+        where: {
+          groupId: groupId,
+          userId: memId,
+        },
+      });
+
+      if (alreadyMember) {
+        return res.status(400).json({ error: "User already exist." });
+      }
+
+      await prisma.groupMembership.create({
+        data: {
+          groupId: groupId,
+          userId: memId,
+        },
+      });
+    }
+    res.status(200).json("User joined the group successfully");
+  } catch (err) {
+    console.log(err);
+  }
 };
