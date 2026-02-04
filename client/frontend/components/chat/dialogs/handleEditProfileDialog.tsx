@@ -34,8 +34,8 @@ export default function EditProfileDialog({
       if (data) {
         setUser(data);
         setUserInput({
-          DisplayName: data.username ?? "",
-          Bio: data.bio ?? "",
+          DisplayName: data.user.username ?? "",
+          Bio: data.user.bio ?? "",
         });
       }
     };
@@ -91,7 +91,7 @@ export default function EditProfileDialog({
           <div
             className="rounded-full bg-center bg-cover size-24"
             style={{
-              backgroundImage: `url(${user?.profileImage})`,
+              backgroundImage: `url(${user?.user.profileImage})`,
             }}
           ></div>
 

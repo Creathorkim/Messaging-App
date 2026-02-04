@@ -48,7 +48,7 @@ export type Group = {
   groupRole: string;
 };
 
-type UserType = {
+export type UserType = {
   user: User;
   friends: Friend[];
 };

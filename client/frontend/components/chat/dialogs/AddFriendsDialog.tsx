@@ -147,27 +147,27 @@ export default function AddFriendsDialog({
                   <div
                     className="bg-cover bg-center rounded-full size-12"
                     style={{
-                      backgroundImage: `url(${searchResult.profileImage})`,
+                      backgroundImage: `url(${searchResult.user.profileImage})`,
                     }}
                   ></div>
                   <div>
                     <h1 className="font-semibold text-white ">
-                      {searchResult.username}
+                      {searchResult.user.username}
                     </h1>
                     <p className="text-sm text-slate-500">
-                      @{searchResult.username}
+                      @{searchResult.user.username}
                     </p>
                   </div>
                 </div>
 
-                {searchResult.status === "friends" ? (
+                {searchResult.user.status === "friends" ? (
                   <button
                     className="bg-gray-500/20 text-white text-md  tracking-tight font-semibold py-2 px-3 rounded-lg text-sm"
                     disabled
                   >
                     Friends
                   </button>
-                ) : searchResult.status === "pending" ? (
+                ) : searchResult.user.status === "pending" ? (
                   <div className="flex gap-2">
                     <button
                       className="bg-gray-500/20 text-white text-md  tracking-tight font-semibold py-2 px-3 rounded-lg text-sm"
@@ -177,7 +177,7 @@ export default function AddFriendsDialog({
                     </button>
                     <button
                       className="bg-[#7F56D9] py-2 px-3 rounded-lg text-white  text-sm cursor-pointer  tracking-tight text-md font-semibold"
-                      onClick={() => cancelRequestFunc(searchResult.id)}
+                      onClick={() => cancelRequestFunc(searchResult.user.id)}
                     >
                       {loading ? (
                         <div className="flex gap-3">
@@ -189,10 +189,10 @@ export default function AddFriendsDialog({
                       )}
                     </button>
                   </div>
-                ) : searchResult.status === "awaiting_response" ? (
+                ) : searchResult.user.status === "awaiting_response" ? (
                   <button
                     className="bg-[#7F56D9] cursor-pointer text-sm py-2 px-3 rounded-lg text-white tracking-tight font-semibold"
-                    onClick={() => acceptFriend(searchResult.requestId)}
+                    onClick={() => acceptFriend(searchResult.user.requestId)}
                   >
                     {loading ? (
                       <div className="flex gap-3">
@@ -206,7 +206,7 @@ export default function AddFriendsDialog({
                 ) : (
                   <button
                     className="bg-[#7F56D9] py-2 px-3 rounded-lg cursor-pointer text-white tracking-tight text-sm font-semibold"
-                    onClick={() => addFriend(searchResult.id)}
+                    onClick={() => addFriend(searchResult.user.id)}
                   >
                     {loading ? (
                       <div className="flex gap-3">
