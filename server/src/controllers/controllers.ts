@@ -141,14 +141,14 @@ export const GoogleLogin = (
         if (error) {
           console.log("Google Login Error:", error);
           return res.redirect(
-            `https://messaging-app-2gk2.vercel.app/login?error=${encodeURIComponent(
+            `https://messaging-app-hzy1.vercel.app/login?error=${encodeURIComponent(
               "server error",
             )}`,
           );
         }
         if (!user)
           return res.redirect(
-            `https://messaging-app-2gk2.vercel.app/login?error=${encodeURIComponent(
+            `https://messaging-app-hzy1.vercel.app/login?error=${encodeURIComponent(
               info.message,
             )}`,
           );
@@ -178,7 +178,7 @@ export const GoogleLogin = (
         // );
 
         return res.redirect(
-          `https://messaging-app-2gk2.vercel.app/login?token=${token}`,
+          `https://messaging-app-hzy1.vercel.app/login?token=${token}`,
         );
       },
     )(req, res, next);
@@ -207,7 +207,7 @@ export const GoogleSignUp = (
         if (error) {
           console.log("Google Login Error:", error);
           return res.redirect(
-            `https://messaging-app-2gk2.vercel.app/signup?error=${encodeURIComponent(
+            `https://messaging-app-hzy1.vercel.app/signup?error=${encodeURIComponent(
               "server error",
             )}`,
           );
@@ -215,7 +215,7 @@ export const GoogleSignUp = (
 
         if (!user)
           return res.redirect(
-            `https://messaging-app-2gk2.vercel.app/?error=${encodeURIComponent(
+            `https://messaging-app-hzy1.vercel.app/?error=${encodeURIComponent(
               "Account already exists, try logging in.",
             )}`,
           );
@@ -239,7 +239,7 @@ export const GoogleSignUp = (
   } catch (err) {
     console.log(err);
     res.redirect(
-      `https://messaging-app-2gk2.vercel.app/signup?error=${encodeURIComponent(
+      `https://messaging-app-hzy1.vercel.app/signup?error=${encodeURIComponent(
         "Internal Error.",
       )}`,
     );
