@@ -4,7 +4,7 @@ let socket: Socket | null = null;
 
 export const getSocket = () => {
   if (!socket) {
-    socket = io("http://localhost:3001", {
+    socket = io("https://messaging-app-backend-l4ma.onrender.com", {
       autoConnect: false,
       reconnection: true,
       reconnectionAttempts: Infinity,

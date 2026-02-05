@@ -1,4 +1,4 @@
-const Api = "http://localhost:3001";
+const Api = "https://messaging-app-backend-l4ma.onrender.com";
 
 type signUpType = {
   username: string;

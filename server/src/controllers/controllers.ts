@@ -18,7 +18,6 @@ const getString = (
   return String(value);
 };
 
-
 export const signUp = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -64,7 +63,7 @@ export const signUp = async (req: Request, res: Response) => {
     //   `
     // );
 
-    return res.redirect("http://localhost:3000/login");
+    return res.redirect("https://messaging-app-2gk2.vercel.app/login");
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -142,14 +141,14 @@ export const GoogleLogin = (
         if (error) {
           console.log("Google Login Error:", error);
           return res.redirect(
-            `http://localhost:3000/login?error=${encodeURIComponent(
+            `https://messaging-app-2gk2.vercel.app/login?error=${encodeURIComponent(
               "server error",
             )}`,
           );
         }
         if (!user)
           return res.redirect(
-            `http://localhost:3000/login?error=${encodeURIComponent(
+            `https://messaging-app-2gk2.vercel.app/login?error=${encodeURIComponent(
               info.message,
             )}`,
           );
@@ -178,7 +177,7 @@ export const GoogleLogin = (
         // </div>`
         // );
 
-        return res.redirect(`http://localhost:3000/login?token=${token}`);
+        return res.redirect(`https://messaging-app-2gk2.vercel.app/login?token=${token}`);
       },
     )(req, res, next);
   } catch (err) {
@@ -206,7 +205,7 @@ export const GoogleSignUp = (
         if (error) {
           console.log("Google Login Error:", error);
           return res.redirect(
-            `http://localhost:3000/signup?error=${encodeURIComponent(
+            `https://messaging-app-2gk2.vercel.app/signup?error=${encodeURIComponent(
               "server error",
             )}`,
           );
@@ -214,7 +213,7 @@ export const GoogleSignUp = (
 
         if (!user)
           return res.redirect(
-            `http://localhost:3000/signup?error=${encodeURIComponent(
+            `https://messaging-app-2gk2.vercel.app/?error=${encodeURIComponent(
               "Account already exists, try logging in.",
             )}`,
           );
@@ -238,7 +237,7 @@ export const GoogleSignUp = (
   } catch (err) {
     console.log(err);
     res.redirect(
-      `http://localhost:3000/signup?error=${encodeURIComponent(
+      `https://messaging-app-2gk2.vercel.app/signup?error=${encodeURIComponent(
         "Internal Error.",
       )}`,
     );
@@ -292,12 +291,12 @@ export const initialLogin = async (req: Request, res: Response) => {
       },
     });
 
-    const friends = friendRequests.map((fr:any) => {
+    const friends = friendRequests.map((fr: any) => {
       return fr.senderId === userId ? fr.receiver : fr.sender;
     });
 
     const chatWithLastMessage = await Promise.all(
-      friends.map(async (fr:any) => {
+      friends.map(async (fr: any) => {
         const directChat = await prisma.directChat.findFirst({
           where: {
             OR: [
@@ -353,10 +352,10 @@ export const initialLogin = async (req: Request, res: Response) => {
       },
     });
 
-    const groups = groupQuery.map((gr:any) => gr.group);
+    const groups = groupQuery.map((gr: any) => gr.group);
 
     const groupWithLastMessage = await Promise.all(
-      groups.map(async (gr:any) => {
+      groups.map(async (gr: any) => {
         const groupMessage = await prisma.groupChat.findUnique({
           where: { id: gr.id },
           include: {
@@ -485,7 +484,7 @@ export const searchBar = async (req: Request, res: Response) => {
     }
 
     const usersWithStatus = await Promise.all(
-      users.map(async (user:any) => {
+      users.map(async (user: any) => {
         const friendStatus = await prisma.friendRequest.findFirst({
           where: {
             OR: [
@@ -585,18 +584,18 @@ export const sendFriendRequest = async (req: Request, res: Response) => {
       message: "Friend request sent successfully.",
     });
 
-    sendEmail(
-      receiver.email,
-      `New Friend Request from ${sender.username} - NexChat`,
-      `<div style = "font-family: Arial, sans-serif;  max-width: 600px; padding:20px; background-color: #f9f9f9; border-radius: 8px; ">
-        <h1 style = "color: #333;  margin: 0 0 20px 0;">Welcome to NexChat Message App</h1>
-        <p style="color: #555; margin: 0 0 20px 0;">Hi ${receiver.username},</p>
-        <p style="color: #555; margin: 0 0 10px 0;"><strong>${sender.username}</strong> sent you a friend request on NexChat!</p>
-        <p style="color: #555; margin: 0 0 20px 0;"> 🎉 Connect with ${sender.username} and start chatting!</p>
-        <br>
-        <p style="margin: 0;color: #999;">Best regards,<br>The NexChat Team</p>
-      </div>`,
-    );
+    // sendEmail(
+    //   receiver.email,
+    //   `New Friend Request from ${sender.username} - NexChat`,
+    //   `<div style = "font-family: Arial, sans-serif;  max-width: 600px; padding:20px; background-color: #f9f9f9; border-radius: 8px; ">
+    //     <h1 style = "color: #333;  margin: 0 0 20px 0;">Welcome to NexChat Message App</h1>
+    //     <p style="color: #555; margin: 0 0 20px 0;">Hi ${receiver.username},</p>
+    //     <p style="color: #555; margin: 0 0 10px 0;"><strong>${sender.username}</strong> sent you a friend request on NexChat!</p>
+    //     <p style="color: #555; margin: 0 0 20px 0;"> 🎉 Connect with ${sender.username} and start chatting!</p>
+    //     <br>
+    //     <p style="margin: 0;color: #999;">Best regards,<br>The NexChat Team</p>
+    //   </div>`,
+    // );
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "Internal error" });
@@ -620,18 +619,18 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
       },
     });
 
-    sendEmail(
-      acceptedFriendReques.sender.email,
-      `${acceptedFriendReques.receiver.username} accepted your friend request! - NexChat 🎉`,
-      `<div style = "font-family: Arial, sans-serif;  max-width: 600px; padding:20px; background-color: #f9f9f9; border-radius: 8px; ">
-        <h1 style = "color: #333;  margin: 0 0 20px 0;">Welcome to NexChat Message App</h1>
-        <p style="color: #555; margin: 0 0 20px 0;">Hi ${acceptedFriendReques.sender.username},</p>
-        <p style="color: #555; margin: 0 0 10px 0;"><strong> Great news! <strong>${acceptedFriendReques.receiver.username}</strong> accepted your friend request on NexChat!</p>
-        <p style="color: #555; margin: 0 0 20px 0;">  🎊 You can now start chatting with ${acceptedFriendReques.receiver.username}!</p>
-        <br>
-        <p style="margin: 0;color: #999;">Best regards,<br>The NexChat Team</p>
-      </div>`,
-    );
+    // sendEmail(
+    //   acceptedFriendReques.sender.email,
+    //   `${acceptedFriendReques.receiver.username} accepted your friend request! - NexChat 🎉`,
+    //   `<div style = "font-family: Arial, sans-serif;  max-width: 600px; padding:20px; background-color: #f9f9f9; border-radius: 8px; ">
+    //     <h1 style = "color: #333;  margin: 0 0 20px 0;">Welcome to NexChat Message App</h1>
+    //     <p style="color: #555; margin: 0 0 20px 0;">Hi ${acceptedFriendReques.sender.username},</p>
+    //     <p style="color: #555; margin: 0 0 10px 0;"><strong> Great news! <strong>${acceptedFriendReques.receiver.username}</strong> accepted your friend request on NexChat!</p>
+    //     <p style="color: #555; margin: 0 0 20px 0;">  🎊 You can now start chatting with ${acceptedFriendReques.receiver.username}!</p>
+    //     <br>
+    //     <p style="margin: 0;color: #999;">Best regards,<br>The NexChat Team</p>
+    //   </div>`,
+    // );
     res.status(200).json({ message: "Friend request accepted." });
   } catch (err) {
     console.log(err);
