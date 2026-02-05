@@ -1,9 +1,9 @@
 import { Server } from "socket.io";
-import prisma from "./config/prismaClient";
+import prisma from "./config/prismaClient.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-import { GroupNotifications } from "./services/groupNotifications";
+import { GroupNotifications } from "./services/groupNotifications.js";
 
 type messageDataType = {
   directChatId?: string;
@@ -70,7 +70,7 @@ export const socketHandler = (io: any) => {
       });
 
       // Extract friend IDs (excluding current user)
-      const friendsId = friendRequests.map((fr) =>
+      const friendsId = friendRequests.map((fr:any) =>
         fr.sender.id === userId ? fr.receiver.id : fr.sender.id,
       );
 
@@ -88,7 +88,7 @@ export const socketHandler = (io: any) => {
       });
 
       // Filter only online friends
-      return friendsWithStatus.filter((friend) => friend.isOnline);
+      return friendsWithStatus.filter((friend:any) => friend.isOnline);
     };
 
     const broadCastOnlineUsers = async () => {

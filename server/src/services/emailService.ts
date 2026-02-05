@@ -1,4 +1,4 @@
-import transporter from "../config/nodeMailerConfig";
+import transporter from "../config/nodeMailerConfig.js";
 import dotenv from "dotenv";
 dotenv.config();
 

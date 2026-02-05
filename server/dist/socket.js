@@ -1,0 +1,668 @@
+import { Server } from "socket.io";
+import prisma from "./config/prismaClient.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
+import { GroupNotifications } from "./services/groupNotifications.js";
+export const socketHandler = (io) => {
+    io.use(async (socket, next) => {
+        try {
+            const token = socket.handshake.auth.token;
+            if (!token) {
+                return next(new Error("Authentication error: No token provided"));
+            }
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.id },
+            });
+            if (!user) {
+                return next(new Error("Authentication error: User not found"));
+            }
+            socket.userId = user.id;
+            socket.username = user.username;
+            socket.email = user.email;
+            next();
+        }
+        catch (err) {
+            console.log(err);
+            next(new Error("Internal error."));
+        }
+    });
+    io.on("connection", async (socket) => {
+        console.log(`${socket.username} is connected to the socket server`);
+        await prisma.user.update({
+            where: { id: socket.userId },
+            data: { isOnline: true },
+        });
+        socket.join(socket.userId);
+        const getOnlineUsers = async (userId) => {
+            // Get all friends of the current user
+            const friendRequests = await prisma.friendRequest.findMany({
+                where: {
+                    OR: [{ senderId: userId }, { receiverId: userId }],
+                    status: "ACCEPTED",
+                },
+                select: {
+                    sender: true,
+                    receiver: true,
+                },
+            });
+            // Extract friend IDs (excluding current user)
+            const friendsId = friendRequests.map((fr) => fr.sender.id === userId ? fr.receiver.id : fr.sender.id);
+            // Get online status for all friends
+            const friendsWithStatus = await prisma.user.findMany({
+                where: {
+                    id: { in: friendsId },
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    profileImage: true,
+                    isOnline: true,
+                },
+            });
+            // Filter only online friends
+            return friendsWithStatus.filter((friend) => friend.isOnline);
+        };
+        const broadCastOnlineUsers = async () => {
+            const onlineFriends = await getOnlineUsers(socket.userId);
+            socket.emit("onlineUsers", { usersOnline: onlineFriends });
+            for (const friend of onlineFriends) {
+                const friendsOnlineFriends = await getOnlineUsers(friend.id);
+                socket
+                    .to(friend.id)
+                    .emit("friendOnline", { userId: socket.userId, isOnline: true });
+                socket
+                    .to(friend.id)
+                    .emit("onlineUsers", { usersOnline: friendsOnlineFriends });
+            }
+        };
+        const getMyOnlineStatus = async () => {
+            try {
+                await prisma.user.update({
+                    where: { id: socket.userId },
+                    data: {
+                        isOnline: true,
+                    },
+                });
+                socket.emit("onlineUser", { isOnline: true });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        };
+        await getMyOnlineStatus();
+        await broadCastOnlineUsers();
+        socket.on("getFriendOnline", async (data) => {
+            const { friendId } = data;
+            try {
+                // console.log(`${friendId} connected to the server get online friends`)
+                const onlineStatus = await prisma.user.findUnique({
+                    where: {
+                        id: friendId,
+                    },
+                });
+                socket.emit("friendOnline", {
+                    userId: friendId,
+                    isOnline: onlineStatus?.isOnline,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("message:send", async (data) => {
+            try {
+                const { recipientId, content, fileUrl, voiceMessage } = data;
+                let directChat = await prisma.directChat.findFirst({
+                    where: {
+                        OR: [
+                            { user1Id: socket.userId, user2Id: recipientId },
+                            { user1Id: recipientId, user2Id: socket.userId },
+                        ],
+                    },
+                });
+                if (!directChat) {
+                    directChat = await prisma.directChat.create({
+                        data: {
+                            user1Id: socket.userId,
+                            user2Id: recipientId,
+                        },
+                    });
+                }
+                // const recipient = await prisma.user.findUnique({
+                //   where: { id: recipientId },
+                //   select: {
+                //     profileImage: true,
+                //     username: true,
+                //   },
+                // });
+                if (!content && !fileUrl && !voiceMessage) {
+                    return socket.emit("error", {
+                        error: "Message must contain text, file, or voice note",
+                    });
+                }
+                const messageData = {
+                    directChatId: directChat.id,
+                    senderId: socket.userId,
+                    ...(content && { content }),
+                    ...(fileUrl && { fileUrl }),
+                    ...(voiceMessage && { voiceMessage }),
+                };
+                const message = await prisma.messages.create({
+                    data: messageData,
+                    include: {
+                        sender: true,
+                    },
+                });
+                socket.to(recipientId).emit("message:receive", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    chatId: directChat.id,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    seen: message.seen,
+                    recipientId: recipientId,
+                });
+                socket.to(recipientId).emit("lastMessage", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    chatId: directChat.id,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    seen: message.seen,
+                    recipientId: recipientId,
+                });
+                socket.emit("lastMessage", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    chatId: directChat.id,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    seen: message.seen,
+                    recipientId: recipientId,
+                });
+                socket.to(recipientId).emit("unreadCount", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    chatId: directChat.id,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    seen: message.seen,
+                    recipientId: recipientId,
+                });
+                socket.emit("message:receive", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    chatId: directChat.id,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    seen: message.seen,
+                    recipientId: recipientId,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("message:edit", async (data) => {
+            const { content, directChatId, messageId, recipientId } = data;
+            const senderId = socket.userId;
+            try {
+                const message = await prisma.messages.findUnique({
+                    where: { id: messageId },
+                });
+                if (message?.senderId !== senderId)
+                    return;
+                if (!directChatId)
+                    return;
+                const chat = await prisma.directChat.findUnique({
+                    where: {
+                        id: directChatId,
+                    },
+                });
+                if (!chat)
+                    return;
+                if (!message)
+                    return;
+                const messageData = {
+                    directChatId: directChatId,
+                    messageId: messageId,
+                    senderId: senderId,
+                    ...(content && { content }),
+                };
+                const editedMessage = await prisma.messages.update({
+                    where: {
+                        id: messageId,
+                    },
+                    data: messageData,
+                    include: {
+                        sender: true,
+                    },
+                });
+                socket.emit("edit-message", {
+                    id: editedMessage.id,
+                    content: editedMessage.content,
+                    voiceMessage: editedMessage.voiceMessage,
+                    fileUrl: editedMessage.fileUrl,
+                    chatId: directChatId,
+                    senderImage: editedMessage.sender.profileImage,
+                    senderId: editedMessage.senderId,
+                    createdAt: editedMessage.createdAt,
+                    seen: editedMessage.seen,
+                });
+                socket.to(recipientId).emit("edit-message", {
+                    id: editedMessage.id,
+                    content: editedMessage.content,
+                    voiceMessage: editedMessage.voiceMessage,
+                    fileUrl: editedMessage.fileUrl,
+                    chatId: directChatId,
+                    senderImage: editedMessage.sender.profileImage,
+                    senderId: editedMessage.senderId,
+                    createdAt: editedMessage.createdAt,
+                    seen: editedMessage.seen,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("message:reply", async (data) => {
+            const { content, fileUrl, voiceMessage, messageId, directChatId, recipientId, } = data;
+            try {
+                const message = await prisma.messages.findUnique({
+                    where: { id: messageId },
+                });
+                if (!message)
+                    return;
+                const messageData = {
+                    directChatId: directChatId,
+                    senderId: socket.userId,
+                    messageId: messageId,
+                    ...(content && { content }),
+                    ...(fileUrl && { fileUrl }),
+                    ...(voiceMessage && { voiceMessage }),
+                };
+                const updatedMessage = await prisma.messages.create({
+                    data: messageData,
+                    include: {
+                        sender: true,
+                    },
+                });
+                socket.to(recipientId).emit("message:receive", {
+                    id: updatedMessage.id,
+                    content: updatedMessage.content,
+                    voiceMessage: updatedMessage.voiceMessage,
+                    fileUrl: updatedMessage.fileUrl,
+                    chatId: updatedMessage.directChatId,
+                    senderImage: updatedMessage.sender.profileImage,
+                    senderId: updatedMessage.senderId,
+                    createdAt: updatedMessage.createdAt,
+                    messageId: updatedMessage.messageId,
+                    seen: updatedMessage.seen,
+                    recipientId: recipientId,
+                });
+                socket.emit("message:receive", {
+                    id: updatedMessage.id,
+                    content: updatedMessage.content,
+                    voiceMessage: updatedMessage.voiceMessage,
+                    fileUrl: updatedMessage.fileUrl,
+                    chatId: updatedMessage.directChatId,
+                    senderImage: updatedMessage.sender.profileImage,
+                    senderId: updatedMessage.senderId,
+                    createdAt: updatedMessage.createdAt,
+                    messageId: updatedMessage.messageId,
+                    seen: updatedMessage.seen,
+                    recipientId: recipientId,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("message:delete", async (data) => {
+            const { messageId, recipientId } = data;
+            try {
+                const message = await prisma.messages.findUnique({
+                    where: { id: messageId },
+                });
+                if (!message)
+                    return;
+                const deletedMessage = await prisma.messages.delete({
+                    where: {
+                        id: messageId,
+                    },
+                });
+                socket.to(recipientId).emit("message:delete", {
+                    id: deletedMessage.id,
+                });
+                socket.emit("message:delete", {
+                    id: deletedMessage.id,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("group_message:send", async (data) => {
+            try {
+                const { groupId, content, voiceMessage, fileUrl } = data;
+                console.log(`${data.groupId} received on the backend.`);
+                const user = await prisma.groupMembership.findUnique({
+                    where: {
+                        userId_groupId: {
+                            userId: socket.userId,
+                            groupId: groupId,
+                        },
+                    },
+                });
+                if (!user) {
+                    return socket.emit("error", {
+                        error: "Error sending message, You ain't a member of this group",
+                    });
+                }
+                const recipient = await prisma.user.findUnique({
+                    where: { id: socket.userId },
+                    select: {
+                        username: true,
+                        profileImage: true,
+                    },
+                });
+                const messageData = {
+                    senderId: socket.userId,
+                    groupId: groupId,
+                    ...(content && { content }),
+                    ...(voiceMessage && { voiceMessage }),
+                    ...(fileUrl && { fileUrl }),
+                };
+                const message = await prisma.messages.create({
+                    data: messageData,
+                    include: {
+                        sender: true,
+                    },
+                });
+                io.to(groupId).emit("group_message:receive", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    groupId: message.groupId,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    // seen: message.seen,
+                    sender: {
+                        username: message.sender.username,
+                        profileImage: message.sender.profileImage,
+                    },
+                });
+                io.to(groupId).emit("group:LastMessage", {
+                    id: message.id,
+                    content: message.content,
+                    voiceMessage: message.voiceMessage,
+                    fileUrl: message.fileUrl,
+                    groupId: message.groupId,
+                    senderImage: message.sender.profileImage,
+                    senderId: message.senderId,
+                    createdAt: message.createdAt,
+                    messageId: message.messageId,
+                    // seen: message.seen,
+                    sender: {
+                        username: message.sender.username,
+                        profileImage: message.sender.profileImage,
+                    },
+                });
+            }
+            catch (err) {
+                console.log("Creathorkim we have an error", err);
+            }
+        });
+        socket.on("group:reply-message", async (data) => {
+            const { groupId, content, fileUrl, voiceMessage, messageId } = data;
+            const messageData = {
+                groupId: groupId,
+                ...(content && { content }),
+                ...(fileUrl && { fileUrl }),
+                ...(voiceMessage && { voiceMessage }),
+                senderId: socket.userId,
+                messageId: messageId,
+            };
+            try {
+                const replyMessage = await prisma.messages.create({
+                    data: messageData,
+                    include: {
+                        sender: true,
+                    },
+                });
+                io.to(groupId).emit("group:LastMessage", {
+                    id: replyMessage.id,
+                    content: replyMessage.content,
+                    voiceMessage: replyMessage.voiceMessage,
+                    fileUrl: replyMessage.fileUrl,
+                    chatId: replyMessage.directChatId,
+                    senderImage: replyMessage.sender.profileImage,
+                    senderId: replyMessage.senderId,
+                    createdAt: replyMessage.createdAt,
+                    messageId: replyMessage.messageId,
+                    seen: replyMessage.seen,
+                    sender: {
+                        username: replyMessage.sender.username,
+                        profileImage: replyMessage.sender.profileImage,
+                    },
+                });
+                io.to(groupId).emit("group_message:receive", {
+                    id: replyMessage.id,
+                    content: replyMessage.content,
+                    voiceMessage: replyMessage.voiceMessage,
+                    fileUrl: replyMessage.fileUrl,
+                    chatId: replyMessage.directChatId,
+                    senderImage: replyMessage.sender.profileImage,
+                    senderId: replyMessage.senderId,
+                    createdAt: replyMessage.createdAt,
+                    messageId: replyMessage.messageId,
+                    seen: replyMessage.seen,
+                    sender: {
+                        username: replyMessage.sender.username,
+                        profileImage: replyMessage.sender.profileImage,
+                    },
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("group:join", async (data) => {
+            try {
+                const { groupId } = data;
+                console.log(`${groupId} received on the backend`);
+                const member = await prisma.groupMembership.findUnique({
+                    where: {
+                        userId_groupId: {
+                            userId: socket.userId,
+                            groupId: groupId,
+                        },
+                    },
+                });
+                if (!member) {
+                    return socket.emit("error", {
+                        error: "Error You ain't a member of this group",
+                    });
+                }
+                socket.join(groupId);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("group:edit", async (data) => {
+            const { groupId, content, fileUrl, voiceMessage, messageId } = data;
+            const messageData = {
+                groupId: groupId,
+                ...(content && { content }),
+                ...(fileUrl && { fileUrl }),
+                ...(voiceMessage && { voiceMessage }),
+                id: messageId,
+            };
+            try {
+                const editedMessage = await prisma.messages.update({
+                    where: { id: messageId },
+                    data: messageData,
+                    include: {
+                        sender: true,
+                    },
+                });
+                io.to(groupId).emit("group:editedMessage", {
+                    id: editedMessage.id,
+                    content: editedMessage.content,
+                    voiceMessage: editedMessage.voiceMessage,
+                    fileUrl: editedMessage.fileUrl,
+                    groupId: groupId,
+                    messageId: editedMessage.messageId,
+                    senderImage: editedMessage.sender.profileImage,
+                    senderId: editedMessage.senderId,
+                    createdAt: editedMessage.createdAt,
+                    seen: editedMessage.seen,
+                    sender: {
+                        username: editedMessage.sender.username,
+                        profileImage: editedMessage.sender.profileImage,
+                    },
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("group:delete", async (data) => {
+            const { groupId, messageId } = data;
+            try {
+                const deletedMessage = await prisma.messages.delete({
+                    where: { id: messageId, groupId: groupId },
+                });
+                io.to(groupId).emit("group:deletedMessage", {
+                    id: deletedMessage.id,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("group:leave", async (data) => {
+            try {
+                const { groupId } = data;
+                console.log(`${groupId} left the group room`);
+                socket.leave(groupId);
+                socket.to(groupId).emit("group:leave:notice", {
+                    message: `${socket.username} left the group`,
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+        socket.on("typing:start", (data) => {
+            const { isTyping, recipientId } = data;
+            if (isTyping) {
+                socket.to(recipientId).emit("listeningTyping", {
+                    message: "typing",
+                });
+            }
+            else {
+                socket.to(recipientId).emit("listeningTyping", { message: "" });
+            }
+        });
+        socket.on("groupTyping:start", (data) => {
+            const { isTyping, groupId } = data;
+            if (isTyping) {
+                io.to(groupId).emit("listeningTyping", {
+                    message: `${socket.username} is typing`,
+                });
+            }
+            else {
+                io.to(groupId).emit("groupTyping:start", {
+                    message: ``,
+                });
+            }
+        });
+        socket.on("read", async (data) => {
+            const { messageId, friendId } = data;
+            try {
+                const readMessage = await prisma.messages.update({
+                    where: { id: messageId },
+                    data: { seen: true },
+                    include: {
+                        sender: true,
+                    },
+                });
+                socket.to(friendId).emit("incomingRead", {
+                    readMessage: readMessage,
+                    senderId: readMessage.senderId,
+                });
+            }
+            catch (err) {
+                console.log("We have an error with the read", err);
+            }
+        });
+        socket.on("get-notifications", async () => {
+            try {
+                const notification = await prisma.notification.findMany({
+                    where: { userId: socket.userId },
+                });
+                const grouped = GroupNotifications(notification);
+                socket.emit("notifications-data", { grouped });
+            }
+            catch (err) {
+                console.log("Notification Error", err);
+            }
+        });
+        socket.on("connect_error", (err) => {
+            console.log("Connection error:", err.message);
+        });
+        socket.on("disconnect", async (reason) => {
+            try {
+                const onlineFriendsBeforeDisconnect = await getOnlineUsers(socket.userId);
+                await prisma.user.update({
+                    where: { id: socket.userId },
+                    data: { isOnline: false },
+                });
+                for (const room of socket.rooms) {
+                    socket.leave(room);
+                }
+                for (const friend of onlineFriendsBeforeDisconnect) {
+                    const friendsOnlineFriends = await getOnlineUsers(friend.id);
+                    io.to(friend.id).emit("onlineUsers", {
+                        usersOnline: friendsOnlineFriends,
+                    });
+                    socket
+                        .to(friend.id)
+                        .emit("friendOnline", { userId: socket.userId, isOnline: false });
+                }
+                console.log(socket.username, "disconnected", reason);
+            }
+            catch (err) {
+                console.log("Disconnect error", err);
+            }
+        });
+    });
+};
+//# sourceMappingURL=socket.js.map

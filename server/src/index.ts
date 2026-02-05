@@ -8,18 +8,23 @@ import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import bcrypt from "bcryptjs";
-import prisma from "./config/prismaClient";
+import prisma from "./config/prismaClient.js";
 import dotenv from "dotenv";
 dotenv.config();
-import router from "./routes/route";
-import { socketHandler } from "./socket";
+import router from "./routes/route.js";
+import { socketHandler } from "./socket.js";
 
 const app = express();
 
 const server = http.createServer(app);
+const allowedCors = [
+  "http://localhost:5173",
+  "https://messaging-app-2gk2.vercel.app/",
+];
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: allowedCors,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -28,7 +33,7 @@ socketHandler(io);
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: allowedCors,
     // methods: ["GET", "POST"],
     credentials: true,
   }),

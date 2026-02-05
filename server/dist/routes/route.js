@@ -1,46 +1,20 @@
 import authenticate from "../middlewares/authMiddleware.js";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import {
-  signUp,
-  GoogleInit,
-  GoogleLogin,
-  GoogleSignUp,
-  googleSignUpInit,
-  Login,
-  initialLogin,
-  chatHistory,
-  searchBar,
-  sendFriendRequest,
-  acceptFriendRequest,
-  rejectFriendRequest,
-  getFriendRequest,
-  contactUs,
-  updateProfile,
-  deleteAccount,
-  cancelRequest,
-  fileUpload,
-  createGroup,
-  groupChatHistory,
-  unFriend,
-  leaveGroup,
-  addMemberToGroup,
-} from "../controllers/controllers.js";
+import { signUp, GoogleInit, GoogleLogin, GoogleSignUp, googleSignUpInit, Login, initialLogin, chatHistory, searchBar, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, getFriendRequest, contactUs, updateProfile, deleteAccount, cancelRequest, fileUpload, createGroup, groupChatHistory, unFriend, leaveGroup, addMemberToGroup, } from "../controllers/controllers.js";
 import { signUpValidation, loginValidation } from "../middlewares/validation.js";
 import cloudinary from "../config/cloudinary.js";
 import { Router } from "express";
 const router = Router();
-
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => {
-    return {
-      folder: "KimChat Uploads",
-      resource_type: "auto",
-    };
-  },
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        return {
+            folder: "KimChat Uploads",
+            resource_type: "auto",
+        };
+    },
 });
-
 const upload = multer({ storage });
 router.post("/login", loginValidation(), Login);
 router.post("/signUp", signUpValidation(), signUp);
@@ -49,20 +23,12 @@ router.get("/google/signup", googleSignUpInit);
 router.get("/auth/google/signup/callback", GoogleSignUp);
 router.get("/google/login", GoogleInit);
 router.get("/auth/google/login/callback", GoogleLogin);
-
 router.post("/user", authenticate, initialLogin);
-router.put(
-  "/update",
-  authenticate,
-  upload.single("profilePicture"),
-  updateProfile,
-);
+router.put("/update", authenticate, upload.single("profilePicture"), updateProfile);
 router.get("/search", authenticate, searchBar);
 router.get("/chat/:chatId", authenticate, chatHistory);
 router.post("/chat/GroupChat", authenticate, groupChatHistory);
-
 router.post("/uploads", authenticate, upload.single("file"), fileUpload);
-
 router.post("/friend/request", authenticate, sendFriendRequest);
 router.get("/friend/requests/:userId", authenticate, getFriendRequest);
 router.put("/friend/accept/:requestId", authenticate, acceptFriendRequest);
@@ -72,10 +38,6 @@ router.delete("/deleteAccount", authenticate, deleteAccount);
 router.post("/unfriendUser", authenticate, unFriend);
 router.post("/exitGroup", authenticate, leaveGroup);
 router.post("/addMembersToGroup", authenticate, addMemberToGroup);
-router.post(
-  "/createGroup",
-  authenticate,
-  upload.single("imageUrl"),
-  createGroup,
-);
+router.post("/createGroup", authenticate, upload.single("imageUrl"), createGroup);
 export default router;
+//# sourceMappingURL=route.js.map

@@ -1,14 +1,23 @@
 import passport from "passport";
 import type { Request, Response, NextFunction } from "express";
-import prisma from "../config/prismaClient";
+import prisma from "../config/prismaClient.js";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
-import { sendEmail, contactApp } from "../services/emailService";
+import { sendEmail, contactApp } from "../services/emailService.js";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import dotenv from "dotenv";
+import type { ParsedQs } from "qs";
 
 dotenv.config();
+const getString = (
+  value: string | ParsedQs | (string | ParsedQs)[] | undefined,
+): string => {
+  if (!value) return "";
+  if (Array.isArray(value)) return String(value[0]);
+  return String(value);
+};
+
 
 export const signUp = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -283,12 +292,12 @@ export const initialLogin = async (req: Request, res: Response) => {
       },
     });
 
-    const friends = friendRequests.map((fr) => {
+    const friends = friendRequests.map((fr:any) => {
       return fr.senderId === userId ? fr.receiver : fr.sender;
     });
 
     const chatWithLastMessage = await Promise.all(
-      friends.map(async (fr) => {
+      friends.map(async (fr:any) => {
         const directChat = await prisma.directChat.findFirst({
           where: {
             OR: [
@@ -344,10 +353,10 @@ export const initialLogin = async (req: Request, res: Response) => {
       },
     });
 
-    const groups = groupQuery.map((gr) => gr.group);
+    const groups = groupQuery.map((gr:any) => gr.group);
 
     const groupWithLastMessage = await Promise.all(
-      groups.map(async (gr) => {
+      groups.map(async (gr:any) => {
         const groupMessage = await prisma.groupChat.findUnique({
           where: { id: gr.id },
           include: {
@@ -461,7 +470,7 @@ export const groupChatHistory = async (req: Request, res: Response) => {
 
 export const searchBar = async (req: Request, res: Response) => {
   try {
-    const { username } = req.query;
+    const username = getString(req.query.username);
     const currentUser = req.user as string;
 
     const users = await prisma.user.findMany({
@@ -476,7 +485,7 @@ export const searchBar = async (req: Request, res: Response) => {
     }
 
     const usersWithStatus = await Promise.all(
-      users.map(async (user) => {
+      users.map(async (user:any) => {
         const friendStatus = await prisma.friendRequest.findFirst({
           where: {
             OR: [
@@ -649,7 +658,7 @@ export const rejectFriendRequest = async (req: Request, res: Response) => {
 
 export const getFriendRequest = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = getString(req.params.userId);
 
     const requestReceived = await prisma.friendRequest.findMany({
       where: { status: "PENDING", receiverId: userId! },
