@@ -49,7 +49,7 @@ export default function SignUpPage(): React.ReactElement {
       const res = await signUpApi(userInput);
       if (res?.error) {
         console.log(res.error);
-        setError([res.error]);
+        setError([res.error.message || String(res.error)]);
         setLoading(false);
         return;
       }

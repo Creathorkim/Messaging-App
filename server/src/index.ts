@@ -18,7 +18,7 @@ const app = express();
 
 const server = http.createServer(app);
 const allowedCors = [
-  "http://localhost:5173",
+  "http://localhost:3000",
   "https://messaging-app-2gk2.vercel.app/",
 ];
 
