@@ -63,7 +63,8 @@ export default function SignUpPage(): React.ReactElement {
   };
 
   const signUpWithGoogle = async () => {
-    window.location.href = "http://localhost:3001/google/signup";
+    window.location.href =
+      "https://messaging-app-backend-l4ma.onrender.com/google/signup";
   };
   return (
     <section className="w-full min-h-screen px-9 sm:py-0 md:p-24 bg-[#060010] text-white flex flex-col  items-center justify-center ">

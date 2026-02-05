@@ -60,7 +60,7 @@ export default function LoginPage(): React.ReactElement {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3001/google/login";
+    window.location.href = "https://messaging-app-backend-l4ma.onrender.com/google/login";
   };
 
   useEffect(() => {
