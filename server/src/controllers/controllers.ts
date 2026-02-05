@@ -63,7 +63,7 @@ export const signUp = async (req: Request, res: Response) => {
     //   `
     // );
 
-    return res.redirect("https://messaging-app-2gk2.vercel.app/login");
+    return res.status(200).json({ message: "Signup successful" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -177,7 +177,9 @@ export const GoogleLogin = (
         // </div>`
         // );
 
-        return res.redirect(`https://messaging-app-2gk2.vercel.app/login?token=${token}`);
+        return res.redirect(
+          `https://messaging-app-2gk2.vercel.app/login?token=${token}`,
+        );
       },
     )(req, res, next);
   } catch (err) {

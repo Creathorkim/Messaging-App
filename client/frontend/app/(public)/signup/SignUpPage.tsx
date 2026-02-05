@@ -6,10 +6,12 @@ import { MessageCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { signUp as signUpApi } from "@/lib/api/auth";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage(): React.ReactElement {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
+  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [visible, setIsVisible] = useState(false);
